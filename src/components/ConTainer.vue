@@ -100,7 +100,6 @@ $color_3: rgba(255, 111, 97, 1);
     }
 
 }
-
 .container {
     background-color: #574ab8;
     background-image: url(../assets/imgs/main_bg.png);
@@ -168,6 +167,7 @@ $color_3: rgba(255, 111, 97, 1);
             li:hover i{
                 transform: rotate(180deg);
             }
+            
         }
     }
     .el-main{

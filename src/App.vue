@@ -1,19 +1,20 @@
 <template>
   <div id="app">
-    <ConTainer />
+    <transition
+        name="custom-classes-transition"
+        enter-active-class="animated zoomInDown"
+        leave-active-class="animated zoomOutUp"
+    >
+        <router-view></router-view>
+    </transition>
   </div>
 </template>
 
 <script>
-import HelloWorld from '@/components/HelloWorld.vue'
-import ConTainer from '@/components/ConTainer.vue'
+
 
 export default {
-  name: 'app',
-  components: {
-    HelloWorld,
-    ConTainer
-  }
+  name: 'app'
 }
 </script>
 

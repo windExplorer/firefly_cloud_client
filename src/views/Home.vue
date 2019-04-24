@@ -3,7 +3,8 @@
     <el-container>
         <el-aside width="200px">Aside</el-aside>
         <el-main>
-            111
+          <button @click="add">++</button>
+          {{ this.$store.state.count }}
         </el-main>
     </el-container>
   </div>
@@ -17,6 +18,19 @@ export default {
   name: 'home',
   components: {
     //HelloWorld
+  },
+  data() {
+
+  },
+  methods: {
+    add: function() {
+      console.log(this.$store.state.count)
+      return this.$store.commit('increment')
+
+    }
+  },
+  computed: {
+    
   }
 }
 </script>
@@ -36,7 +50,7 @@ export default {
         color: #333;
         background: #fff;
         overflow: hidden;
-        height: calc(100vh - 70px);
+        height: calc(100vh - 70px) !important;
         overflow-y: auto;
     }
 }
