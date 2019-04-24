@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '@/store.js'
 
 Vue.use(Router)
 
@@ -15,11 +16,17 @@ const router =  new Router({
         {
           path: '',
           redirect: 'home',
+          meta: {
+            auth: true
+          }
         },
         {
           path: 'home',
           name: 'home',
-          component: () => import('./views/Home.vue'),
+          meta: {
+            auth: true,
+          },
+          component: () => import('./views/Home.vue')
         },
         {
           path: 'about',
@@ -61,13 +68,20 @@ const router =  new Router({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const isLogin = localStorage.ele_login ? false : true
-  if(to.path == '/login') {
-    next()
+  //console.log(store)
+  const isLogin = store.state.user.isLogin ? true : false
+  if(to.meta.auth){
+    if(to.path == '/login') {
+      next()
+    } else {
+      //是否在登录状态下
+      isLogin ? next() : next('/login')
+    }
   } else {
-    //是否在登录状态下
-    isLogin ? next() : next('/login')
+    next()
   }
+  
+  
 })
 
 

@@ -5,6 +5,7 @@
         <el-main>
           <button @click="add">++</button>
           {{ this.$store.state.count }}
+          {{ num }}
         </el-main>
     </el-container>
   </div>
@@ -20,17 +21,29 @@ export default {
     //HelloWorld
   },
   data() {
-
+    return {
+      num: 0
+    }
   },
   methods: {
     add: function() {
-      console.log(this.$store.state.count)
-      return this.$store.commit('increment')
-
+      this.$store.state.count ++
+      this.num ++
     }
   },
   computed: {
     
+  },
+  created() {
+    this.$axios.post('/api/user/getuser', {
+      data: {
+        name: 123,
+        uid: 456
+      }
+    }).then(res => {
+      console.log(res)
+      //console.log(this.$store.state.user)
+    })
   }
 }
 </script>
