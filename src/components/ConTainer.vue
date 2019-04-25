@@ -2,11 +2,11 @@
     <div class="container">
         <el-container>
             <el-header>
-                <h1>萤火云</h1>
+                <h1><span @click="Reload">萤火云</span></h1>
                 <ul class="left">
-                    <li><router-link to='/'>网盘</router-link></li>
+                    <li v-show="$store.state.user.isLogin"><router-link to='/'>网盘</router-link></li>
                     <li><router-link to='/dynamic'>动态</router-link></li>
-                    <li><router-link to='/message'>消息</router-link></li>
+                    <li v-show="$store.state.user.isLogin"><router-link to='/message'>消息</router-link></li>
                 </ul>
                 <ul class="right">
                     <el-popover
@@ -15,19 +15,22 @@
                         trigger="hover">
                         <el-card class="box-card">
                         <div slot="header" class="clearfix">
-                            <span><img src="../assets/imgs/head.jpeg" width="50" height="50" alt=""></span>
-                            <span class="name">雾城风雨寻花</span>
+                            <span><img :src="userInfo.avatar" width="50" height="50" alt=""></span>
+                            <span class="name">{{ userInfo.nickname }}</span>
                         </div>
                         <div>
-                            <ul>
-                                <li>个人资料</li>
-                                <li>修改密码</li>
-                                <li>修改邮箱</li>
-                                <li>退出</li>
+                            <ul v-show="$store.state.user.isLogin">
+                                <li @click="personal">个人资料</li>
+                                <li @click="changePwd">修改密码</li>
+                                <li @click="changeEmail">修改邮箱</li>
+                                <li @click="loginOut">退出</li>
+                            </ul>
+                            <ul v-show="!$store.state.user.isLogin">
+                                <li @click="loginIn">登录</li>
                             </ul>
                         </div>
                         </el-card>
-                        <li slot="reference"><img src="../assets/imgs/head.jpeg" alt=""> <span class="name">测试用户</span> <span class="menu"><i class="el-icon-arrow-down"></i></span></li>
+                        <li slot="reference"><img :src="userInfo.avatar" alt=""> <span class="name">{{ userInfo.nickname }}</span> <span class="menu"><i class="el-icon-arrow-down"></i></span></li>
                     </el-popover>
                 </ul>
 
@@ -43,13 +46,97 @@
                 
             </el-main>
         </el-container>
+        <!-- 其他 -->
+        <el-dialog title="收货地址" :visible.sync="pwdVisible">
+            123
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="pwdVisible = false">取 消</el-button>
+                <el-button type="primary" @click="pwdVisible = false">确 定</el-button>
+            </div>
+        </el-dialog>
   </div>
 </template>
 
 <script>
 export default {
-  name: "ConTainer",
-  
+    name: "ConTainer",
+    data() {
+        return {
+            userInfo: {
+                username: '',
+                nickname: '',
+                avatar: ''
+            },
+            pwdForm: {
+
+            },
+            emailForm: {
+
+            },
+            pwdVisible: false,
+            emailVisible: false,
+            formLabelWidth: '120px'
+        }
+    },
+    methods: {
+        loginOut() {
+            let load = this.$loading({ fullscreen: true })
+            this.$apis.userApi.loginOut()
+            .then(res => {
+                load.close()
+                res = res.data
+                if(res.code == 1){
+                    this.$store.commit('user/setUInfo', '')
+                    this.$store.commit('user/setLogin', '')
+                    this.$axios.defaults.headers.common['token'] = ''
+                    this.$axios.defaults.headers.common['username'] = ''
+                    this.$notify({
+                        title: '成功',
+                        message: res.msg,
+                        type: 'success'
+                    })
+                    this.$router.push('/dynamic')
+                }else{
+                    this.$notify.error({
+                        title: '错误',
+                        message: res.msg
+                    })
+                }
+            })
+            .catch(err => {
+                load.close()
+                this.$notify.error({
+                    title: '错误',
+                    message: `请求出错`
+                })
+                console.log(err)
+            })
+        },
+        loginIn() {
+            this.$router.push('/login')
+        },
+        Reload() {
+            this.$router.push('/')
+        },
+        personal() {
+            this.$router.push('/personal')
+        },
+        changePwd() {
+            this.pwdVisible = true
+        },
+        changeEmail() {
+            this.emailVisible = true
+        }
+    },
+    created() {
+        this.userInfo.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
+        console.log(typeof(this.$store.state.user.userInfo.avatar) == 'undefined')
+        if(typeof(this.$store.state.user.userInfo.avatar) == 'undefined'){
+            this.userInfo.avatar = require(`../assets/imgs/head.jpeg`)
+        }
+        this.userInfo.nickname = this.$store.state.user.userInfo.nickname || `游客`
+        console.log(this.userInfo)
+    }
 }
 </script>
 
@@ -125,6 +212,9 @@ $color_3: rgba(255, 111, 97, 1);
             display: inline-block;
             position: absolute;
             left: 0;
+            span{
+                cursor: pointer;
+            }
         }
         ul{
             position: absolute;

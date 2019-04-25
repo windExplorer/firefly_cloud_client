@@ -18,7 +18,7 @@
         </div>
 
         <div class="forget">
-          <span>忘记密码?</span>
+          <span @click="gotoResetPwd">忘记密码?</span>
         </div>
 
         <div class="button">
@@ -52,13 +52,14 @@ export default {
       this.$apis.userApi.loginIn(this.form)
       .then(res => {
         load.close()
-        console.log(res)
         res = res.data
         if(res.code == 1){
           this.$store.commit('user/setUInfo', res.data)
           this.$store.commit('user/setLogin', true)
-          this.$notify({
-            title: '成功',
+          this.$axios.defaults.headers.common['token'] = this.$store.state.user.userInfo.token
+          this.$axios.defaults.headers.common['username'] = this.$store.state.user.userInfo.username
+          this.$message({
+            showClose: true,
             message: res.msg,
             type: 'success'
           })
@@ -82,10 +83,13 @@ export default {
     },
     gotoRegister() {
       this.$router.push('/register')
+    },
+    gotoResetPwd() {
+      this.$router.push('/resetpwd')
     }
   },
   created() {
-    console.log(this.$store)
+    
   }
 }
 </script>

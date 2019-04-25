@@ -6,10 +6,17 @@ export default {
     loginIn: (data) => {
         return com.post('/api/user/login', data)
     },
-    loginOut: (data) => {
-        return com.post('/api/user/logout', data)
+    loginOut: () => {
+        return com.post('/api/user/logout')
     },
     register: (data) => {
         return com.post('/api/user/register', data)
+    },
+    resetpwd: (data) => {
+        return com.post('/api/user/resetpwd', data)
+    },
+    getvcode: (data) => {
+        return com.post('/api/user/getvcode', data)
     }
+
 }

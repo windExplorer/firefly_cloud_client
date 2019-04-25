@@ -64,7 +64,6 @@ export default {
       this.$apis.userApi.register(this.form)
       .then(res => {
         load.close()
-        console.log(res)
         res = res.data
         if(res.code == 1){
           this.$notify({
@@ -95,7 +94,7 @@ export default {
     }
   },
   created() {
-    console.log(this.$store)
+    
   }
 }
 </script>

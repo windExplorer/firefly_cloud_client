@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import store from '@/store.js'
 
 Vue.use(Router)
 
@@ -48,6 +47,14 @@ const router =  new Router({
             auth: true,  // 添加该字段，表示进入这个路由是需要登录的        
           },
           component: () => import('./views/Message.vue')
+        },
+        {
+          path: 'personal',
+          name: 'personal',
+          meta: {            
+            auth: true,  // 添加该字段，表示进入这个路由是需要登录的        
+          },
+          component: () => import('./views/Personal.vue')
         }
       ]
     },
@@ -61,6 +68,11 @@ const router =  new Router({
       path: '/register',
       name: 'register',
       component: () => import('./views/Register.vue')
+    },
+    {
+      path: '/resetpwd',
+      name: 'resetpwd',
+      component: () => import('./views/Resetpwd.vue')
     }
     
   ]
@@ -68,14 +80,16 @@ const router =  new Router({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  //console.log(store)
-  const isLogin = store.state.user.isLogin ? true : false
   if(to.meta.auth){
     if(to.path == '/login') {
       next()
     } else {
       //是否在登录状态下
-      isLogin ? next() : next('/login')
+      console.log(window.sessionStorage.getItem('isLogin'))
+      if(window.sessionStorage.getItem('isLogin'))
+        next()
+      else
+        next('/login')
     }
   } else {
     next()

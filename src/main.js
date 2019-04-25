@@ -4,24 +4,16 @@ import router from './router'
 import store from './store'
 import './plugins/element.js'
 import animated from 'animate.css'
-import axios from 'axios'
-import qs from 'qs'
 import apis from './api/apis'
+import axios from './api/common'
+import qs from 'qs'
+import global from './global'
 
 
-let token,username
-if(store.state.user.userInfo == null){
-    token = ''
-    username = ''
-}else{
-    token = store.state.user.userInfo.token
-    username = store.state.user.userInfo.useranme
-}
-axios.defaults.headers.common['token'] = token
-axios.defaults.headers.common['username'] = username
 Vue.prototype.$axios = axios
 Vue.prototype.$qs = qs
 Vue.prototype.$apis = apis 
+Vue.prototype.$global = global 
 Vue.config.productionTip = false
 
 /* 自定义组件 */

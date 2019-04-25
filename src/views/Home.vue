@@ -35,15 +35,7 @@ export default {
     
   },
   created() {
-    this.$axios.post('/api/user/getuser', {
-      data: {
-        name: 123,
-        uid: 456
-      }
-    }).then(res => {
-      console.log(res)
-      //console.log(this.$store.state.user)
-    })
+    
   }
 }
 </script>

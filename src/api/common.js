@@ -1,15 +1,15 @@
 import axios from 'axios'
-import store from '../store'
 
-let token,username
-if(store.state.user.userInfo == null){
-    token = ''
-    username = ''
+let ss = {}
+if(window.sessionStorage.getItem('userInfo') != null){
+    ss = JSON.parse(window.sessionStorage.getItem('userInfo'))
 }else{
-    token = store.state.user.userInfo.token
-    username = store.state.user.userInfo.useranme
+    ss.token = ''
+    ss.username = ''
 }
-axios.defaults.headers.common['token'] = token
-axios.defaults.headers.common['username'] = username
+
+
+axios.defaults.headers.common['token'] = ss.token
+axios.defaults.headers.common['username'] = ss.username
 
 export default axios
