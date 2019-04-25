@@ -6,7 +6,7 @@
         <div class="title">用户名</div>
         <div class="input-box">
           <div class="icon"><img src="../assets/icons/user.png" alt=""></div>
-            <input type="text" v-model="form.username">
+            <input type="text" v-model="form.username" v-focus>
             <label class="border" for="input"></label>
         </div>
 
@@ -26,7 +26,7 @@
         </div>
 
         <div class="register">
-          <span>立即注册</span>
+          <span @click='gotoRegister'>立即注册</span>
         </div>
 
       </form>
@@ -48,18 +48,21 @@ export default {
   },
   methods: {
     onSubmit() {
-      console.log('submit!')
-      console.log(this.form)
+      let load = this.$loading({ fullscreen: true })
       this.$apis.userApi.loginIn(this.form)
       .then(res => {
+        load.close()
         console.log(res)
         res = res.data
         if(res.code == 1){
+          this.$store.commit('user/setUInfo', res.data)
+          this.$store.commit('user/setLogin', true)
           this.$notify({
             title: '成功',
             message: res.msg,
             type: 'success'
           })
+          this.$router.push('/')
         }else{
           this.$notify.error({
             title: '错误',
@@ -68,10 +71,21 @@ export default {
         }
       })
       .catch(err => {
+        load.close()
+        this.$notify.error({
+            title: '错误',
+            message: `请求出错`
+        })
         console.log(err)
       })
 
+    },
+    gotoRegister() {
+      this.$router.push('/register')
     }
+  },
+  created() {
+    console.log(this.$store)
   }
 }
 </script>

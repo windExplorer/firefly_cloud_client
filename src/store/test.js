@@ -2,18 +2,17 @@ export default {
     namespaced: true,
     
     state: {
-        userInfo: JSON.parse(window.sessionStorage.getItem('userInfo')),
-        isLogin: window.sessionStorage.getItem('isLogin') || false
+        userInfo: JSON.parse(window.sessionStorage.getItem('userInfo_test')),
+        isLogin: window.sessionStorage.getItem('isLogin_test') || false
     },
     mutations: {
         setUInfo(state, data) {
-            console.log(data)
             state.userInfo = data
-            window.sessionStorage.setItem('userInfo', JSON.stringify(data))
+            window.sessionStorage.setItem('userInfo_test', JSON.stringify(data))
         },
         setLogin(state, data) {
             state.isLogin = data
-            window.sessionStorage.setItem('isLogin', data)
+            window.sessionStorage.setItem('isLogin_test', data)
         }
     },
     actions: {
