@@ -4,6 +4,7 @@
         name="custom-classes-transition"
         enter-active-class="animated zoomInDown"
         leave-active-class="animated zoomOutUp"
+        mode="out-in"
     >
         <router-view></router-view>
     </transition>

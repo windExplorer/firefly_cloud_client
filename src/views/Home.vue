@@ -44,20 +44,20 @@ export default {
 .home{
   color: #fff;
   .el-aside {
-        text-align: center;
-        height: calc(100vh - 60px);
-        padding-top: 20px;
-    }
-    
-    .el-main {
-        text-align: center;
-        line-height: 160px;
-        color: #333;
-        background: #fff;
-        overflow: hidden;
-        height: calc(100vh - 70px) !important;
-        overflow-y: auto;
-    }
+      text-align: center;
+      height: calc(100vh - 60px);
+      padding-top: 20px;
+  }
+  
+  .el-main {
+      text-align: center;
+      line-height: 160px;
+      color: #333;
+      background: #fff;
+      overflow: hidden;
+      height: calc(100vh - 70px) !important;
+      overflow-y: auto;
+  }
 }
 </style>
 

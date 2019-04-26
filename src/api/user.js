@@ -23,6 +23,12 @@ export default {
     },
     changeEmail: (data) => {
         return com.post('/api/user/changeemail', data)
+    },
+    changeBase: (data) => {
+        return com.post('/api/user/changebase', data)
+    },
+    upAvatar: (data) => {
+        return com.post('/api/user/upavatar', data)
     }
 
 }

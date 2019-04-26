@@ -69,13 +69,15 @@ export default {
           this.$notify({
             title: '成功',
             message: res.msg,
-            type: 'success'
+            type: 'success',
+            duration: 1500
           })
           this.$router.push('/login')
         }else{
           this.$notify.error({
             title: '错误',
-            message: res.msg
+            message: res.msg,
+            duration: 2000
           })
         }
       })
@@ -83,7 +85,8 @@ export default {
         load.close()
         this.$notify.error({
             title: '错误',
-            message: `请求出错`
+            message: `请求出错`,
+            duration: 2000
         })
         console.log(err)
       })

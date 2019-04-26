@@ -15,8 +15,8 @@
                         trigger="hover">
                         <el-card class="box-card">
                         <div slot="header" class="clearfix">
-                            <span><img :src="userInfo.avatar" width="50" height="50" alt=""></span>
-                            <span class="name">{{ userInfo.nickname }}</span>
+                            <span><img :src="listenAvatar" width="50" height="50" alt=""></span>
+                            <span class="name">{{ $store.state.user.userInfo.nickname || `游客` }}</span>
                         </div>
                         <div>
                             <ul v-show="$store.state.user.isLogin">
@@ -30,7 +30,7 @@
                             </ul>
                         </div>
                         </el-card>
-                        <li slot="reference"><img :src="userInfo.avatar" alt=""> <span class="name">{{ userInfo.nickname }}</span> <span class="menu"><i class="el-icon-arrow-down"></i></span></li>
+                        <li slot="reference"><img :src="listenAvatar" alt=""> <span class="name">{{ $store.state.user.userInfo.nickname || `游客` }}</span> <span class="menu"><i class="el-icon-arrow-down"></i></span></li>
                     </el-popover>
                 </ul>
 
@@ -38,8 +38,9 @@
             <el-main>
                 <transition
                     name="custom-classes-transition"
-                    enter-active-class="animated bounceInUp"
+                    enter-active-class="animated bounceInLeft"
                     leave-active-class="animated zoomOutRight"
+                    mode="out-in"
                 >
                     <router-view></router-view>
                 </transition>
@@ -131,13 +132,15 @@ export default {
                     this.$notify({
                         title: '成功',
                         message: res.msg,
-                        type: 'success'
+                        type: 'success',
+                        duration: 1500
                     })
                     this.$router.push('/dynamic')
                 }else{
                     this.$notify.error({
                         title: '错误',
-                        message: res.msg
+                        message: res.msg,
+                        duration: 2000
                     })
                 }
             })
@@ -145,7 +148,8 @@ export default {
                 load.close()
                 this.$notify.error({
                     title: '错误',
-                    message: `请求出错`
+                    message: `请求出错`,
+                    duration: 2000
                 })
                 console.log(err)
             })
@@ -179,14 +183,16 @@ export default {
                     this.$notify({
                         title: '成功',
                         message: res.msg,
-                        type: 'success'
+                        type: 'success',
+                        duration: 1500
                     })
                     //修改密码成功就重新登录
                     this.$router.push('/login')
                 }else{
                     this.$notify.error({
                         title: '错误',
-                        message: res.msg
+                        message: res.msg,
+                        duration: 2000
                     })
                 }
             })
@@ -194,7 +200,8 @@ export default {
                 load.close()
                 this.$notify.error({
                     title: '错误',
-                    message: `请求出错`
+                    message: `请求出错`,
+                    duration: 2000
                 })
                 console.log(err)
             })
@@ -210,7 +217,8 @@ export default {
                     this.$notify({
                         title: '成功',
                         message: res.msg,
-                        type: 'success'
+                        type: 'success',
+                        duration: 1500
                     })
                     this.emailVisible = false
                     this.emailForm.vcode = ''
@@ -219,7 +227,8 @@ export default {
                 }else{
                     this.$notify.error({
                         title: '错误',
-                        message: res.msg
+                        message: res.msg,
+                        duration: 2000
                     })
                 }
             })
@@ -227,7 +236,8 @@ export default {
                 load.close()
                 this.$notify.error({
                     title: '错误',
-                    message: `请求出错`
+                    message: `请求出错`,
+                    duration: 2000
                 })
                 console.log(err)
             })
@@ -246,7 +256,8 @@ export default {
                     this.$notify({
                         title: '成功',
                         message: res.msg,
-                        type: 'success'
+                        type: 'success',
+                        duration: 1500
                     })
                     // 一分钟后才能再次获取验证码
                     this.timer = 60
@@ -255,7 +266,8 @@ export default {
                 }else{
                     this.$notify.error({
                         title: '错误',
-                        message: res.msg
+                        message: res.msg,
+                        duration: 2000
                     })
                 }
             })
@@ -263,7 +275,8 @@ export default {
                 load.close()
                 this.$notify.error({
                     title: '错误',
-                    message: `请求出错`
+                    message: `请求出错`,
+                    duration: 2000
                 })
                 console.log(err)
             })
@@ -283,17 +296,34 @@ export default {
         }
     },
     created() {
-        this.userInfo.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
+        /* this.userInfo.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
         if(typeof(this.$store.state.user.userInfo.avatar) == 'undefined'){
             this.userInfo.avatar = require(`../assets/imgs/head.jpeg`)
-        }
-        this.userInfo.nickname = this.$store.state.user.userInfo.nickname || `游客`
+        } */
+        //this.userInfo.nickname = this.$store.state.user.userInfo.nickname || `游客`
 
         //检测是否能够获取验证码
         this.timer = this.$store.state.user.getVcode
         this.allow_getVcode = this.timer == 0 ? false : true 
         if(this.timer !== 0) {
             this.setTimer()
+        }
+    },
+    computed: {
+        listenAvatar() {
+            this.userInfo.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
+            if(typeof(this.$store.state.user.userInfo.avatar) == 'undefined'){
+                this.userInfo.avatar = require(`../assets/imgs/head.jpeg`)
+            }
+            return this.userInfo.avatar
+        }
+    },
+    watch: {
+        listenAvatar() {
+            this.userInfo.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
+            if(typeof(this.$store.state.user.userInfo.avatar) == 'undefined'){
+                this.userInfo.avatar = require(`../assets/imgs/head.jpeg`)
+            }
         }
     }
 }
@@ -466,7 +496,7 @@ $color_3: rgba(255, 111, 97, 1);
 }
 .getVcode{
     position: absolute;
-    right: 0;
+    right: 5px;
     top: 0;
 }
 

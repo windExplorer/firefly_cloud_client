@@ -62,7 +62,7 @@ export default {
             title: '成功',
             message: res.msg,
             type: 'success',
-            duration: 2000
+            duration: 1500
           })
           /* this.$message({
             showClose: true,
@@ -73,7 +73,8 @@ export default {
         }else{
           this.$notify.error({
             title: '错误',
-            message: res.msg
+            message: res.msg,
+            duration: 2000
           })
         }
       })
@@ -81,7 +82,8 @@ export default {
         load.close()
         this.$notify.error({
             title: '错误',
-            message: `请求出错`
+            message: `请求出错`,
+            duration: 2000
         })
         console.log(err)
       })

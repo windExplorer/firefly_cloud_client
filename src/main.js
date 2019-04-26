@@ -2,7 +2,8 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import './plugins/element.js'
+import element from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css';
 import animated from 'animate.css'
 import apis from './api/apis'
 import axios from './api/common'
@@ -10,11 +11,14 @@ import qs from 'qs'
 import global from './global'
 
 
+
 Vue.prototype.$axios = axios
 Vue.prototype.$qs = qs
 Vue.prototype.$apis = apis 
 Vue.prototype.$global = global 
 Vue.config.productionTip = false
+
+Vue.use(element)
 
 /* 自定义组件 */
 Vue.directive('focus', {
