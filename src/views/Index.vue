@@ -18,5 +18,11 @@ export default {
 </script>
 
 <style lang='scss'>
-
+.page-container{
+  background: #fff;
+  color: #333;
+  width: calc(100% - 10px);
+  height: 100%;
+  margin-left: 10px;
+}
 </style>

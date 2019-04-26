@@ -38,7 +38,7 @@
             <el-main>
                 <transition
                     name="custom-classes-transition"
-                    enter-active-class="animated bounceInLeft"
+                    enter-active-class="animated bounceInUp"
                     leave-active-class="animated zoomOutRight"
                 >
                     <router-view></router-view>
@@ -47,11 +47,42 @@
             </el-main>
         </el-container>
         <!-- 其他 -->
-        <el-dialog title="收货地址" :visible.sync="pwdVisible">
-            123
+        <el-dialog title="修改密码" :visible.sync="pwdVisible" :width="`500px`">
+            <el-form :model="pwdForm">
+                <el-form-item label="原密码" :label-width="formLabelWidth">
+                    <el-input v-model="pwdForm.password1" autocomplete="off" autofocus="true" type='password'></el-input>
+                </el-form-item>
+                <el-form-item label="新密码" :label-width="formLabelWidth">
+                    <el-input v-model="pwdForm.password2" autocomplete="off" type='password'></el-input>
+                </el-form-item>
+                <el-form-item label="确认密码" :label-width="formLabelWidth">
+                    <el-input v-model="pwdForm.password3" autocomplete="off" type='password'></el-input>
+                </el-form-item>
+            </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="pwdVisible = false">取 消</el-button>
-                <el-button type="primary" @click="pwdVisible = false">确 定</el-button>
+                <el-button type="primary" @click="onSubmitPwd">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <el-dialog title="修改邮箱" :visible.sync="emailVisible" :width="`500px`">
+            <el-form :model="emailForm">
+                <el-form-item label="验证码" :label-width="formLabelWidth">
+                    <el-input v-model="emailForm.vcode" autocomplete="off" autofocus="true" type='text'></el-input>
+                    <div class="getVcode">
+                        <el-button type="primary" round size='mini' @click="getVcode" :disabled="allow_getVcode">获取验证码 <span v-show="timer">{{ `(${timer})` }}</span></el-button>
+                    </div>
+                </el-form-item>
+                <el-form-item label="新邮箱" :label-width="formLabelWidth">
+                    <el-input v-model="emailForm.email" autocomplete="off" type='email'></el-input>
+                </el-form-item>
+                <el-form-item label="确认邮箱" :label-width="formLabelWidth">
+                    <el-input v-model="emailForm.email2" autocomplete="off" type='email'></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="emailVisible = false">取 消</el-button>
+                <el-button type="primary" @click="onSubmitEmail">确 定</el-button>
             </div>
         </el-dialog>
   </div>
@@ -68,14 +99,21 @@ export default {
                 avatar: ''
             },
             pwdForm: {
-
+                password1: '',
+                password2: '',
+                password3: ''
             },
             emailForm: {
-
+                vcode: '',
+                email: '',
+                email2: ''
             },
             pwdVisible: false,
             emailVisible: false,
-            formLabelWidth: '120px'
+            formLabelWidth: '120px',
+            allow_getVcode: '',
+            timer: 0,
+            t: null
         }
     },
     methods: {
@@ -126,16 +164,137 @@ export default {
         },
         changeEmail() {
             this.emailVisible = true
+        },
+        onSubmitPwd() {
+            let load = this.$loading({ fullscreen: true })
+            this.$apis.userApi.changePwd(this.pwdForm)
+            .then(res => {
+                load.close()
+                res = res.data
+                if(res.code == 1){
+                    this.$store.commit('user/setUInfo', '')
+                    this.$store.commit('user/setLogin', '')
+                    this.$axios.defaults.headers.common['token'] = ''
+                    this.$axios.defaults.headers.common['username'] = ''
+                    this.$notify({
+                        title: '成功',
+                        message: res.msg,
+                        type: 'success'
+                    })
+                    //修改密码成功就重新登录
+                    this.$router.push('/login')
+                }else{
+                    this.$notify.error({
+                        title: '错误',
+                        message: res.msg
+                    })
+                }
+            })
+            .catch(err => {
+                load.close()
+                this.$notify.error({
+                    title: '错误',
+                    message: `请求出错`
+                })
+                console.log(err)
+            })
+        },
+        onSubmitEmail() {
+            let load = this.$loading({ fullscreen: true })
+            this.$apis.userApi.changeEmail(this.emailForm)
+            .then(res => {
+                load.close()
+                res = res.data
+                if(res.code == 1){
+                    this.$store.commit('user/setEmail', this.emailForm.email)
+                    this.$notify({
+                        title: '成功',
+                        message: res.msg,
+                        type: 'success'
+                    })
+                    this.emailVisible = false
+                    this.emailForm.vcode = ''
+                    this.emailForm.email = ''
+                    this.emailForm.email2 = ''
+                }else{
+                    this.$notify.error({
+                        title: '错误',
+                        message: res.msg
+                    })
+                }
+            })
+            .catch(err => {
+                load.close()
+                this.$notify.error({
+                    title: '错误',
+                    message: `请求出错`
+                })
+                console.log(err)
+            })
+        },
+        getVcode() {
+            let load = this.$loading({ fullscreen: true })
+            let data = {
+                email: this.$store.state.user.userInfo.email,
+                type: 2
+            }
+            this.$apis.userApi.getvcode(data)
+            .then(res => {
+                load.close()
+                res = res.data
+                if(res.code == 1){
+                    this.$notify({
+                        title: '成功',
+                        message: res.msg,
+                        type: 'success'
+                    })
+                    // 一分钟后才能再次获取验证码
+                    this.timer = 60
+                    this.allow_getVcode = true
+                    this.setTimer()
+                }else{
+                    this.$notify.error({
+                        title: '错误',
+                        message: res.msg
+                    })
+                }
+            })
+            .catch(err => {
+                load.close()
+                this.$notify.error({
+                    title: '错误',
+                    message: `请求出错`
+                })
+                console.log(err)
+            })
+        },
+        setTimer() {
+            if(this.t == null) {
+                this.t = setInterval( () => {
+                    this.timer -- 
+                    this.$store.commit('user/set_getVcode', this.timer)
+                    if(this.timer == 0){
+                        this.allow_getVcode = false
+                        clearInterval(this.t)
+                        this.t = null
+                    }
+                }, 1000)
+            }
         }
     },
     created() {
         this.userInfo.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
-        console.log(typeof(this.$store.state.user.userInfo.avatar) == 'undefined')
         if(typeof(this.$store.state.user.userInfo.avatar) == 'undefined'){
             this.userInfo.avatar = require(`../assets/imgs/head.jpeg`)
         }
         this.userInfo.nickname = this.$store.state.user.userInfo.nickname || `游客`
-        console.log(this.userInfo)
+
+        //检测是否能够获取验证码
+        this.timer = this.$store.state.user.getVcode
+        this.allow_getVcode = this.timer == 0 ? false : true 
+        if(this.timer !== 0) {
+            this.setTimer()
+        }
     }
 }
 </script>
@@ -304,6 +463,11 @@ $color_3: rgba(255, 111, 97, 1);
             }
         }
     }
+}
+.getVcode{
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 
   

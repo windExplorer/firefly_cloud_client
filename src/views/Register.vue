@@ -6,7 +6,7 @@
         <div class="title">用户名</div>
         <div class="input-box">
           <div class="icon"><img src="../assets/icons/user.png" alt=""></div>
-            <input type="text" v-model="form.username" v-focus>
+            <input type="text" v-model="form.username" v-focus='true'>
             <label class="border" for="input"></label>
         </div>
 

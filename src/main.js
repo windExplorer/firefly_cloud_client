@@ -19,7 +19,8 @@ Vue.config.productionTip = false
 /* 自定义组件 */
 Vue.directive('focus', {
   // 当绑定元素插入到 DOM 中。
-  inserted: function (el) {
+  inserted: function (el, {value}) {
+    if(value)
       // 聚焦元素
       el.focus()
   },

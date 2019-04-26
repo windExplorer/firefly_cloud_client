@@ -6,7 +6,7 @@
         <div class="title">邮箱</div>
         <div class="input-box">
           <div class="icon"><img src="../assets/icons/email.png" alt=""></div>
-            <input type="email" v-model="form.email">
+            <input type="email" v-model="form.email" v-focus='true'>
             <label class="border" for="input"></label>
         </div>
 
@@ -110,7 +110,8 @@ export default {
         getVcode() {
             let load = this.$loading({ fullscreen: true })
             let data = {
-                email: this.form.email
+                email: this.form.email,
+                type: 1
             }
             this.$apis.userApi.getvcode(data)
             .then(res => {

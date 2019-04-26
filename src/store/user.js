@@ -25,6 +25,10 @@ export default {
         set_getVcode(state, data) {
             state.getVcode = data
             window.localStorage.setItem('getVcode', data)
+        },
+        setEmail(state, data) {
+            state.userInfo.email = data
+            window.sessionStorage.setItem('userInfo', JSON.stringify(state.userInfo))
         }
     },
     actions: {

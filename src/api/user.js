@@ -17,6 +17,12 @@ export default {
     },
     getvcode: (data) => {
         return com.post('/api/user/getvcode', data)
+    },
+    changePwd: (data) => {
+        return com.post('/api/user/changepwd', data)
+    },
+    changeEmail: (data) => {
+        return com.post('/api/user/changeemail', data)
     }
 
 }

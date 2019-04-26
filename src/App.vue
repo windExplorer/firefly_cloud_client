@@ -12,7 +12,6 @@
 
 <script>
 
-
 export default {
   name: 'app'
 }
@@ -38,4 +37,5 @@ img{
   text-align: center;
   color: #2c3e50;
 }
+
 </style>

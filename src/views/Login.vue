@@ -6,7 +6,7 @@
         <div class="title">用户名</div>
         <div class="input-box">
           <div class="icon"><img src="../assets/icons/user.png" alt=""></div>
-            <input type="text" v-model="form.username" v-focus>
+            <input type="text" v-model="form.username" v-focus='true'>
             <label class="border" for="input"></label>
         </div>
 
@@ -58,11 +58,17 @@ export default {
           this.$store.commit('user/setLogin', true)
           this.$axios.defaults.headers.common['token'] = this.$store.state.user.userInfo.token
           this.$axios.defaults.headers.common['username'] = this.$store.state.user.userInfo.username
-          this.$message({
+          this.$notify({
+            title: '成功',
+            message: res.msg,
+            type: 'success',
+            duration: 2000
+          })
+          /* this.$message({
             showClose: true,
             message: res.msg,
             type: 'success'
-          })
+          }) */
           this.$router.push('/')
         }else{
           this.$notify.error({
