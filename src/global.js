@@ -2,17 +2,64 @@
 import CryptoJS from "crypto-js"
 
 export default {
+    name: `萤火云`,
     adminUrl: `http://www.firefly.test`,
 
     getFileMd5: function(file, callback) {
         var reader = new FileReader()
         reader.onload = (event) => {
-          var res = event.target.result
-          res = CryptoJS.lib.WordArray.create(res)
-          var sha1 = CryptoJS.MD5(res).toString()
-          callback(sha1)
+            console.log(event)
+            var res = event.target.result
+            res = CryptoJS.lib.WordArray.create(res)
+            var sha1 = CryptoJS.MD5(res).toString()
+            callback(sha1)
         }
         reader.readAsArrayBuffer(file)
+    },
+
+    getFileMd5_2: /* 文件md5操作 */
+    function getFileMd5(file, callback){
+  
+      var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
+      //file = this.files[0],
+      chunkSize = 2 * 1024 * 1024,                             // Read in chunks of 2MB
+     // chunks = Math.ceil(file.size / chunkSize),
+      chunks = 100,
+      currentChunk = 0,
+      spark = new SparkMD5.ArrayBuffer(),
+      fileReader = new FileReader();
+  
+      fileReader.onload =  (e) => {
+          //console.log('read chunk nr', currentChunk + 1, 'of', chunks);
+          spark.append(e.target.result);                   // Append array buffer
+          currentChunk++;
+          let percent = ((currentChunk/chunks)*100).toFixed(0) + '%'
+          console.log(percent)
+          //element.progress('event-file-progress', percent);
+          //ele.text(percent)
+          if (currentChunk < chunks) {
+              loadNext();
+          } else {
+            //console.log('finished loading');
+            //ele.fadeOut(500)
+            callback(spark.end());  // Compute hash
+            //return spark.end()
+          }
+      }
+  
+      fileReader.onerror = function () {
+          console.warn('oops, something went wrong.');
+      }
+  
+      function loadNext() {
+          var start = currentChunk * chunkSize,
+              end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
+  
+          fileReader.readAsArrayBuffer(blobSlice.call(file, start, end));
+      }
+  
+      loadNext();
+  
     },
 
     /** 

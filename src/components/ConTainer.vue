@@ -15,7 +15,7 @@
                         trigger="hover">
                         <el-card class="box-card">
                         <div slot="header" class="clearfix">
-                            <span><img :src="listenAvatar" width="50" height="50" alt=""></span>
+                            <span><img :src="$store.getters['user/getUserInfo'].avatar || `../assets/imgs/head.jpeg`" width="50" height="50" alt=""></span>
                             <span class="name">{{ $store.state.user.userInfo.nickname || `游客` }}</span>
                         </div>
                         <div>
@@ -30,7 +30,7 @@
                             </ul>
                         </div>
                         </el-card>
-                        <li slot="reference"><img :src="listenAvatar" alt=""> <span class="name">{{ $store.state.user.userInfo.nickname || `游客` }}</span> <span class="menu"><i class="el-icon-arrow-down"></i></span></li>
+                        <li slot="reference"><img :src="$store.getters['user/getUserInfo'].avatar || `../assets/imgs/head.jpeg`" alt=""> <span class="name">{{ $store.state.user.userInfo.nickname || `游客` }}</span> <span class="menu"><i class="el-icon-arrow-down"></i></span></li>
                     </el-popover>
                 </ul>
 
@@ -90,6 +90,7 @@
 </template>
 
 <script>
+
 export default {
     name: "ConTainer",
     data() {
@@ -125,8 +126,7 @@ export default {
                 load.close()
                 res = res.data
                 if(res.code == 1){
-                    this.$store.commit('user/setUInfo', '')
-                    this.$store.commit('user/setLogin', '')
+                    this.$store.commit('user/logout')
                     this.$axios.defaults.headers.common['token'] = ''
                     this.$axios.defaults.headers.common['username'] = ''
                     this.$notify({
@@ -135,7 +135,7 @@ export default {
                         type: 'success',
                         duration: 1500
                     })
-                    this.$router.push('/dynamic')
+                    this.$router.push('/login')
                 }else{
                     this.$notify.error({
                         title: '错误',
@@ -302,6 +302,7 @@ export default {
         } */
         //this.userInfo.nickname = this.$store.state.user.userInfo.nickname || `游客`
 
+        console.log(this.$store.getters['user/getUserInfo'].avatar)
         //检测是否能够获取验证码
         this.timer = this.$store.state.user.getVcode
         this.allow_getVcode = this.timer == 0 ? false : true 
@@ -310,21 +311,11 @@ export default {
         }
     },
     computed: {
-        listenAvatar() {
-            this.userInfo.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
-            if(typeof(this.$store.state.user.userInfo.avatar) == 'undefined'){
-                this.userInfo.avatar = require(`../assets/imgs/head.jpeg`)
-            }
-            return this.userInfo.avatar
-        }
+        
+        
     },
     watch: {
-        listenAvatar() {
-            this.userInfo.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
-            if(typeof(this.$store.state.user.userInfo.avatar) == 'undefined'){
-                this.userInfo.avatar = require(`../assets/imgs/head.jpeg`)
-            }
-        }
+        
     }
 }
 </script>

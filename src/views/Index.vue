@@ -13,8 +13,16 @@ export default {
   components: {
     HelloWorld,
     ConTainer
+  },
+  methods: {
+    
+
+  },
+  created() {
+    //登录检测
+    this.$store.dispatch('user/checkLogin')
   }
-};
+}
 </script>
 
 <style lang='scss'>
@@ -49,7 +57,11 @@ export default {
     background: #fff;
     color: #333;
     height: 100%;
-    padding: 10px;
+    overflow: auto;
+    .tab{
+      padding: 20px;
+      overflow: hidden;
+    }
   }
 }
 .el-form-item__content{

@@ -16,7 +16,7 @@ const router =  new Router({
           path: '',
           redirect: 'home',
           meta: {
-            auth: true
+            auth: true,
           }
         },
         {
@@ -85,7 +85,7 @@ router.beforeEach((to, from, next) => {
       next()
     } else {
       //是否在登录状态下
-      console.log(window.sessionStorage.getItem('isLogin'))
+      //console.log(window.sessionStorage.getItem('isLogin'))
       if(window.sessionStorage.getItem('isLogin'))
         next()
       else

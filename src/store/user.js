@@ -1,10 +1,13 @@
+import $global from '@/global'
+
 export default {
     namespaced: true,
     
     state: {
-        userInfo: JSON.parse(window.sessionStorage.getItem('userInfo')),
+        userInfo: JSON.parse(window.sessionStorage.getItem('userInfo')) || ``,
         isLogin: window.sessionStorage.getItem('isLogin') || false,
         getVcode: parseInt(window.localStorage.getItem('getVcode')) || 0,
+        logintime: window.sessionStorage.getItem('logintime') || '',
     },
     mutations: {
         setUInfo(state, data) {
@@ -19,8 +22,16 @@ export default {
             else if(data == 'true'){
                 data = true
             }
-            state.isLogin = data            
+            state.isLogin = data      
             window.sessionStorage.setItem('isLogin', data)
+        },
+        setLoginTime(state, data) {
+            state.logintime = data
+            window.sessionStorage.setItem('logintime', data)
+        },
+        logout(state) {
+            sessionStorage.clear()
+            state = ''
         },
         set_getVcode(state, data) {
             state.getVcode = data
@@ -43,12 +54,36 @@ export default {
             //头像
             state.userInfo.avatar = data
             window.sessionStorage.setItem('userInfo', JSON.stringify(state.userInfo))
+        },
+        setUseSize(state, data) {
+            //设置使用空间
+            //console.log(data)
+            //console.log(state.userInfo.use_size)
+            state.userInfo.use_size = parseInt(state.userInfo.use_size) + parseInt(data)
+            window.sessionStorage.setItem('userInfo', JSON.stringify(state.userInfo))
         }
     },
     actions: {
+        checkLogin(context) {
+            //判断
+            let time = Date.parse(new Date())/1000
+            let start = Date.parse(new Date(new Date(new Date().toLocaleDateString()).getTime()))/1000
+            if(typeof(context.state.logintime) != 'undefined' && context.state.logintime != ''){
+                if(context.state.userInfo.uptime < start){
+                    console.log('需要重新验证登录!')
+                }
 
+            }
+            console.log(context)
+        }
     },
     getters: {
-        getIsLogin: (state) => state.isLogin
+        getIsLogin: (state) => state.isLogin,
+        getUserInfo: state => {
+            if(typeof(state.userInfo.avatar) != 'undefined')
+                if(state.userInfo.avatar.indexOf('http://') == -1 && state.userInfo.avatar.indexOf('https://') == -1)
+                    state.userInfo.avatar = $global.adminUrl + state.userInfo.avatar
+            return state.userInfo
+        }
     }
 }

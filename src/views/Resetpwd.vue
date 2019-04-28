@@ -161,6 +161,7 @@ export default {
         }
     },
     created() {
+      this.$store.commit('page/setTitle', this.$global.name + ' - 找回密码')
         //检测是否能够获取验证码
         this.timer = this.$store.state.user.getVcode
         this.allow_getVcode = this.timer == 0 ? false : true 

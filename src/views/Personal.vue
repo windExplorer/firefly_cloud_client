@@ -1,7 +1,7 @@
 <template>
     <div class="personal page-container">
-       <el-tabs :tab-position="tabPosition" style="height: 100%;" v-model="$store.state.page.personal.tab_active" @tab-click="TabClick">
-            <el-tab-pane name="1">
+        <el-tabs :tab-position="tabPosition" style="height: 100%;" v-model="$store.state.page.personal.tab_active" @tab-click="TabClick">
+            <el-tab-pane name="1" :ptitle="'基本资料'">
                 <span slot="label"><i class="el-icon-user"></i> 基本资料</span>
                 <div class="tab tab1">
                     <el-row :gutter="20">
@@ -39,13 +39,13 @@
                 </div>
             </el-tab-pane>
 
-            <el-tab-pane name="2">
+            <el-tab-pane name="2" :ptitle="'我的头像'">
                 <span slot="label"><i class="el-icon-user"></i> 我的头像</span>
                 <div class="tab tab2">
                     <el-row :gutter="20">
                         <el-col :span="10">
                             <div class="avatar-box">
-                                <img :src="listenAvatar" alt="">
+                                <img :src="$store.getters['user/getUserInfo'].avatar" alt="">
                             </div>
                         </el-col>
                         <el-col :span="10">
@@ -68,11 +68,13 @@
                 </div>
             </el-tab-pane>
 
-            <el-tab-pane name="3">
+            <el-tab-pane name="3" :ptitle="'其他资料'">
                 <span slot="label"><i class="el-icon-user"></i> 其他资料</span>
+                <vue-scroll>
                 <div class="tab tab3">
+                    
                     <el-row :gutter="20">
-                        <el-col :span="10" :offset="5">
+                        <el-col :span="10">
                             <div class="block">
                                 <el-timeline>
                                     <el-timeline-item timestamp="我的邀请码" placement="top">
@@ -110,12 +112,66 @@
                                         <h4>{{ $global.formatTime($store.state.user.userInfo.regtime) }}</h4>
                                     </el-card>
                                     </el-timeline-item>
+                                    <el-timeline-item timestamp="最近更新" placement="top">
+                                    <el-card>
+                                        <h4>{{ $global.formatTime($store.state.user.userInfo.uptime) }}</h4>
+                                    </el-card>
+                                    </el-timeline-item>
                                 </el-timeline>
                             </div>
                         </el-col>
                         
+                        <el-col :span="10">
+                            <div class="block">
+                                <el-timeline>
+                                    <el-timeline-item timestamp="我的邮箱" placement="top">
+                                    <el-card>
+                                        <h4>{{ $store.state.user.userInfo.email }}</h4>
+                                    </el-card>
+                                    </el-timeline-item>
+                                    <el-timeline-item timestamp="我的电话" placement="top">
+                                    <el-card>
+                                        <h4>{{ $store.state.user.userInfo.tel || `null` }}</h4>
+                                    </el-card>
+                                    </el-timeline-item>
+                                    <el-timeline-item timestamp="我的QQ" placement="top">
+                                    <el-card>
+                                        <h4>{{ $store.state.user.userInfo.qq || `null` }}</h4>
+                                    </el-card>
+                                    </el-timeline-item>
+                                    <el-timeline-item timestamp="当前连续登录天数" placement="top">
+                                    <el-card>
+                                        <p>{{ $store.state.user.userInfo.login_day || 0 }}</p>
+                                    </el-card>
+                                    </el-timeline-item>
+                                    <el-timeline-item timestamp="最多连续登录天数" placement="top">
+                                    <el-card>
+                                        <p>{{ $store.state.user.userInfo.login_max_day || 0 }}</p>
+                                    </el-card>
+                                    </el-timeline-item>
+                                    <el-timeline-item timestamp="总登录天数" placement="top">
+                                    <el-card>
+                                        <p>{{ $store.state.user.userInfo.login_total_day || 0 }}</p>
+                                    </el-card>
+                                    </el-timeline-item>
+                                    <el-timeline-item timestamp="我的签名" placement="top">
+                                    <el-card>
+                                        <p>{{ $store.state.user.userInfo.sign_context || `null` }}</p>
+                                    </el-card>
+                                    </el-timeline-item>
+                                    <el-timeline-item timestamp="我的描述" placement="top">
+                                    <el-card>
+                                        <p v-html="$store.state.user.userInfo.description_context || `null`"></p>
+                                    </el-card>
+                                    </el-timeline-item>
+                                </el-timeline>
+                            </div>
+                        </el-col>
+
                     </el-row>
+                    
                 </div>
+                </vue-scroll>
             </el-tab-pane>
         </el-tabs>
     </div>
@@ -272,34 +328,26 @@ export default {
         },
         TabClick(e) {
             //console.log(e.name)
+            this.$store.commit('page/setPersonal_tabActive', e.name)
+            //console.log(this.$store.state.page)
+            this.$store.commit('page/setTitle', this.$global.name + ' - ' + e.$attrs.ptitle)
         }
         
     },
     computed: {
-        listenAvatar() {
-            this.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
-            if(typeof(this.$store.state.user.userInfo.avatar) == 'undefined'){
-                this.avatar = require(`../assets/imgs/head.jpeg`)
-            }
-            return this.avatar
-        }
+        
     },
     watch: {
-        listenAvatar() {
-            this.avatar = this.$global.adminUrl + this.$store.state.user.userInfo.avatar
-            if(typeof(this.$store.state.user.userInfo.avatar) == 'undefined'){
-                this.avatar = require(`../assets/imgs/head.jpeg`)
-            }
-        }
+        
+    },
+    created() {
+        this.$store.commit('page/setTitle', this.$global.name + ' - 个人中心')
     }
 }
 </script>
 
 <style lang='scss'>
 .personal{
-    .tab{
-        margin-top: 20px;
-    }
     .tab2{
         .avatar-uploader .el-upload {
             border: 1px dashed #d9d9d9;

@@ -97,7 +97,7 @@ export default {
     }
   },
   created() {
-    
+    this.$store.commit('page/setTitle', this.$global.name + ' - 注册')
   }
 }
 </script>

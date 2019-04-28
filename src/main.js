@@ -9,6 +9,8 @@ import apis from './api/apis'
 import axios from './api/common'
 import qs from 'qs'
 import global from './global'
+import vuescroll from 'vuescroll'
+import './plugins/spark-md5.min.js'
 
 
 
@@ -19,6 +21,17 @@ Vue.prototype.$global = global
 Vue.config.productionTip = false
 
 Vue.use(element)
+Vue.use(vuescroll); // install the vuescroll first
+Vue.prototype.$vuescrollConfig = {
+  scrollPanel: {
+    easing: 'easeInOutQuart'
+  },
+  bar: {
+    background: '#1DDCFD',
+    showDelay: 1000
+  }
+};
+
 
 /* 自定义组件 */
 Vue.directive('focus', {
