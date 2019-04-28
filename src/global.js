@@ -18,7 +18,8 @@ export default {
     },
 
     getFileMd5_2: /* 文件md5操作 */
-    function getFileMd5(file, callback){
+    function getFileMd5(file, self, status, callback){
+        console.log(self)
   
       var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
       //file = this.files[0],
@@ -33,8 +34,11 @@ export default {
           //console.log('read chunk nr', currentChunk + 1, 'of', chunks);
           spark.append(e.target.result);                   // Append array buffer
           currentChunk++;
-          let percent = ((currentChunk/chunks)*100).toFixed(0) + '%'
-          console.log(percent)
+          let percent = ((currentChunk/chunks)*100).toFixed(0)
+          //console.log(percent)
+            self.uplist[self.uplist.indexOf(status)].progress = percent
+            //console.log(status.name+': '+ percent)
+            //console.log(self.uplist[self.uplist.indexOf(status)].progress)
           //element.progress('event-file-progress', percent);
           //ele.text(percent)
           if (currentChunk < chunks) {

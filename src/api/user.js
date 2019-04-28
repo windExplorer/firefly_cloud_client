@@ -29,6 +29,9 @@ export default {
     },
     upAvatar: (data) => {
         return com.post('/api/user/upavatar', data)
+    },
+    checkLogin: () => {
+        return com.post('api/user/check_login')
     }
 
 }

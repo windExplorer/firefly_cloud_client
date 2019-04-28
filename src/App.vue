@@ -43,10 +43,9 @@ body{
   overflow-x: hidden;
 }
 .ellipsis{
-    width: 500px; 
-    overflow: hidden;
-    text-overflow: ellipsis; //文本溢出显示省略号
-    white-space: nowrap; //文本不会换行
+  overflow: hidden;
+  text-overflow: ellipsis; //文本溢出显示省略号
+  white-space: nowrap; //文本不会换行
 }
 
 </style>

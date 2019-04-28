@@ -49,7 +49,7 @@ Vue.directive('focus', {
 })
 
 
-new Vue({
+window.$vue = new Vue({
   router,
   store,
   animated,

@@ -1,4 +1,5 @@
 import $global from '@/global'
+import $apis from '@/api/apis.js'
 
 export default {
     namespaced: true,
@@ -69,8 +70,32 @@ export default {
             let time = Date.parse(new Date())/1000
             let start = Date.parse(new Date(new Date(new Date().toLocaleDateString()).getTime()))/1000
             if(typeof(context.state.logintime) != 'undefined' && context.state.logintime != ''){
-                if(context.state.userInfo.uptime < start){
+                if(context.state.logintime < start){
                     console.log('需要重新验证登录!')
+                    $apis.userApi.checkLogin().the(res => {
+                        res = res.data
+                        if(res.code == 1){
+                            contxt.commit('setUInfo', res.data)
+                            context.commit('setLogin', true)
+                            context.commit('setLoginTime', res.time)
+                            $vue.$axios.defaults.headers.common['token'] = res.data.token
+                            $vue.$axios.defaults.headers.common['username'] = res.data.username
+                            $vue.$notify({
+                                title: '成功',
+                                message: res.msg,
+                                type: 'success',
+                                duration: 1500
+                            })
+                            //this.$router.push('/')
+                        }else{
+                            $vue.$notify.error({
+                                title: '错误',
+                                message: res.msg,
+                                duration: 2000
+                            })
+                            $vue.$router.push('/login')
+                        }
+                    })
                 }
 
             }

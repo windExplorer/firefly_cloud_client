@@ -12,7 +12,6 @@
             <div class="tools">
               <el-button type="primary" @click=" alert_upFolder = true "><i class="el-icon-upload el-icon--right"></i> 上传</el-button>
               <el-button type="primary" @click="open_createFolder"><i class="el-icon-folder-add el-icon--right"></i> 新建文件夹</el-button>
-              {{ uploadMessage }}
               <el-button-group :class="'btns'" v-show=" selected_file.length+selected_folder.length > 0 ">
                 <el-button type="primary" plain ><i class="el-icon-share el-icon--right"></i> 分享</el-button>
                 <el-button type="primary" plain ><i class="el-icon-edit el-icon--right"></i> 重命名</el-button>
@@ -38,11 +37,15 @@
               <div class="thead">
                 <el-row>
                   <el-col :span="12"><div class=""><el-checkbox v-model="tab1_checked" @change="tab1_allSelect">{{ tab1_checked ? `全不选` : `全选` }}</el-checkbox> 文件名 <span v-show="selected_file.length+selected_folder.length > 0">(已选中{{ selected_file.length+selected_folder.length }}个文件/文件夹)</span></div></el-col>
-                  <el-col :span="6"><div class=""><el-divider direction="vertical"></el-divider>2</div></el-col>
+                  <el-col :span="6">
+                    <div class="">
+                      <el-divider direction="vertical"></el-divider>
+                    </div>
+                  </el-col>
                   <el-col :span="6"><div class=""><el-divider direction="vertical"></el-divider>3</div></el-col>
                 </el-row>
-                <div class="progress" :style="{backgroundImage:'linear-gradient(to right,#C0C7CB 0%,#C0C7CB '+progress+',#E1E6E9 '+progress+',#E1E6E9 100%)'}"></div>
               </div>
+
             </div>
             <div class="file-container">
 
@@ -142,7 +145,6 @@
             </div>
           </vue-scroll>
       </el-tab-pane>
-
       
     </el-tabs>
 
@@ -179,6 +181,35 @@
       </el-upload>
     </el-dialog>
 
+    
+    <el-card class="box-card box-card-up" shadow="hover" v-show="up_box" :style="{ height: up_box_height }">
+      <div slot="header" class="clearfix">
+        <span>卡片名称</span>
+        <i style="float: right; padding: 3px 0;margin-left: 10px;cursor:pointer;" class="el-icon-close" @click="show_upbox(`关闭`)"></i> <el-button style="float: right; padding: 3px 0" type="text" @click="show_upbox(up_box)">{{ up_box }}</el-button> 
+      </div>
+      <vue-scroll>
+      <div class="uplist-box">
+        
+        <div v-for="item, index in uplist" :key='index'>
+           
+          <p>
+            <span class="num">{{ uplist.length-index }}.</span> 
+            <span class="name ellipsis">{{ item.name }}</span> 
+            <span class="progress">{{ item.progress }}%</span> 
+            <span class="type">{{ item.type }}</span>
+            <span class="icon">
+              <el-tooltip class="item" effect="dark" :content="item.error" placement="top">
+                <i :class="item.icon"></i>
+              </el-tooltip>
+            </span>
+          </p>
+           
+        </div>
+      </div>
+      </vue-scroll>
+    </el-card>
+    
+
   </div>
 </template>
 
@@ -207,8 +238,10 @@ export default {
       file_items: this.$store.state.data.home_nav_items[this.$store.state.data.home_nav_path.active_item].list,
       tab1_checked: false,
       alert_upFolder: false,
-      progress: 30,
-      uploadMessage: '123',
+      uplist: [],
+      up_box: '',
+      up_box_height: ''
+      
       
     }
   },
@@ -297,7 +330,8 @@ export default {
     },
     uploadFileMethod(param) {
       this.alert_upFolder = false
-      let fileObject = param.file;
+      this.up_box = `最小化`
+      let fileObject = param.file
       let formData = new FormData()
       formData.append("file", fileObject)
       //console.log(fileObject)
@@ -311,7 +345,12 @@ export default {
         })
         return
       }
-      if(!this.$store.state.data.file_allow.allow_ext.split(',').includes(fileObject.name.split('.')[1])){
+      let file_name_ind = fileObject.name.lastIndexOf('.')
+      let file_ext = fileObject.name.substr(file_name_ind+1)
+      let file_name = fileObject.name.substr(0, file_name_ind)
+
+
+      if(!this.$store.state.data.file_allow.allow_ext.split(',').includes(file_ext)){
         this.$notify({
             title: '失败',
             message: `不在允许的文件类型内(上传文件类型为: ${this.$store.state.data.file_allow.allow_ext})`,
@@ -320,22 +359,24 @@ export default {
         })
         return
       }
-      let self = this
-      var config = {
-        /* onUploadProgress: progressEvent => {
-          var complete = (progressEvent.loaded / progressEvent.total * 100 | 0) + '%'
-          this.progress = complete
-        } */
-        /* onUploadProgress: progressEvent => {
-          let complete = (progressEvent.loaded / progressEvent.total * 100 | 0) + '%'
-          self.uploadMessage = '上传 ' + complete
-          console.log(complete)
-        } */
+      let status = {
+        name: fileObject.name,
+        size: fileObject.size,
+        type: '正在校验',
+        progress: 0,
+        error: `noerror`,
+        icon: `el-icon-warning info`
       }
-      //console.log(config)
+      this.uplist.unshift(status)
+      
 
-      this.$global.getFileMd5_2(fileObject, md5 => {
+      let self = this
+
+      this.$global.getFileMd5_2(fileObject, self, status, md5 => {
         console.log(md5)
+        self.uplist[self.uplist.indexOf(status)].type = `正在上传`
+        //console.log(this.uplist)
+        //return
           //let load = this.$loading({ fullscreen: true })
           this.$apis.fileApi.checkFileMd5({md5: md5, type: 2, folder_id: this.$store.state.data.home_nav_path.active_item, name: fileObject.name})
           .then(res => {
@@ -350,12 +391,18 @@ export default {
                       type: 'success',
                       duration: 1500
                   })
+                  self.uplist[self.uplist.indexOf(status)].type = `秒传`
+                  self.uplist[self.uplist.indexOf(status)].icon = `el-icon-success success`
                   this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
                   this.$store.commit('user/setUseSize', fileObject.size)
                   //console.log(this.$store.state.user.userInfo.use_size)
                   //this.$store.commit('user/setAvatar', res.data.net_path)
               }
               else if(res.code == 0){
+                self.uplist[self.uplist.indexOf(status)].type = `上传失败`
+                self.uplist[self.uplist.indexOf(status)].error = res.msg
+                self.uplist[self.uplist.indexOf(status)].progress = 0
+                self.uplist[self.uplist.indexOf(status)].icon = `el-icon-error error`
                   this.$notify.error({
                       title: '错误',
                       message: res.msg,
@@ -363,6 +410,8 @@ export default {
                   })
               }
               else if(res.code == -1){
+                //self.uplist[self.uplist.indexOf(status)].progress = 0
+                self.uplist[self.uplist.indexOf(status)].type = `正在上传`
                 //let load = this.$loading({ fullscreen: true })
                 formData.append('type', 2)
                 formData.append('size', fileObject.size)
@@ -371,13 +420,14 @@ export default {
                 //this.$apis.fileApi.upFile(formData)
                 this.$axios.post('/api/file/up_file', formData, {
                   onUploadProgress: progressEvent => {
-                      let complete = (progressEvent.loaded / progressEvent.total * 100 | 0) + '%'
-                      self.uploadMessage = '上传 ' + complete
-                      self.progress = complete
+                      let complete = (progressEvent.loaded / progressEvent.total * 100 | 0)
+                      console.log(self.uplist)
+                      let ind = self.uplist.indexOf(status)
+                      self.uplist[ind].progress = complete
+                      
                       //console.log(complete)
                     }
-              })
-                .then((res, config, self) => {
+              }).then(res => {
                     //load.close()
                     res = res.data
                     if(res.code == 1){
@@ -387,19 +437,30 @@ export default {
                             type: 'success',
                             duration: 1500
                         })
+                        self.uplist[self.uplist.indexOf(status)].type = `上传成功`
+                        self.uplist[self.uplist.indexOf(status)].icon = `el-icon-success success`
                         this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
                         this.$store.commit('user/setUseSize', fileObject.size)
                         //console.log(this.$store.state.user.userInfo.use_size)
                         //this.$store.commit('user/setAvatar', res.data.url)
                     }else{
+                      self.uplist[self.uplist.indexOf(status)].type = `上传失败`
+                      self.uplist[self.uplist.indexOf(status)].error = res.msg
+                      self.uplist[self.uplist.indexOf(status)].progress = 0
+                      self.uplist[self.uplist.indexOf(status)].icon = `el-icon-error error`
                         this.$notify.error({
                             title: '错误',
                             message: res.msg,
                             duration: 2000
                         })
+
                     }
                 })
                 .catch(err => {
+                  self.uplist[self.uplist.indexOf(status)].type = `上传失败`
+                  self.uplist[self.uplist.indexOf(status)].error = `请求出错`
+                  self.uplist[self.uplist.indexOf(status)].progress = 0
+                  self.uplist[self.uplist.indexOf(status)].icon = `el-icon-error error`
                     //load.close()
                     this.$notify.error({
                         title: '错误',
@@ -412,9 +473,32 @@ export default {
           })
       })
     },
+    show_upbox(text) {
+      if(text == `最小化`){
+        this.up_box = `最大化`
+        this.up_box_height = `50px`
+      }
+        
+      else if(text == `最大化`){
+        this.up_box = `最小化`
+        this.up_box_height = `auto`
+      }
+      else if(text == `关闭`)
+        this.up_box = ``
+        
+    },
     test() {
-      console.log(1)
-    }
+      this.$notify({
+          title: '上传提示',
+          dangerouslyUseHTMLString: true,
+          message: `<div>'' 正在校验</div>`,
+          duration: 0
+        });
+    },
+    test1() {
+      //this.uplist[0].close()
+      this.uplist = [1, 2, 3]
+    },
 
   },
   computed: {
@@ -434,9 +518,66 @@ export default {
 
 <style lang="scss">
 .home{
-  .progress{
-    height: 10px;
-    width: 100%;
+  .box-card-up{
+    text-align: left;
+    position: fixed;
+    background: #fff;
+    z-index: 100;
+    bottom: 10px;
+    right: 10px;
+    width: 480px;
+    transition: .5s;
+    max-height: 400px;
+    .uplist-box{
+      max-height: 300px;
+      font-size: 14px;
+      color: #606266;
+      p{
+        width: 100%;
+        white-space: nowrap;
+        margin-top: 5px;
+        overflow: hidden;
+      }
+      span{
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .num{
+        width: 20px;
+        text-align: right;
+        margin-right: 10px;
+      }
+      .name{
+        width: 260px;
+      }
+      .progress{
+        width: 50px;
+        text-align: center;
+      }
+      .type{
+        width: 60px;
+      }
+      .icon{
+        width: 30px;
+        text-align: center;
+        i{
+          cursor: pointer;
+        }
+        .success{
+          color: #67C23A;
+        }
+        .error{
+          color: #F56C6C;
+        }
+        .info{
+          color: #409EFF;
+        }
+
+      }
+    }
+    .__view{
+      max-height: 300px;
+    }
   }
   .tips{
     background: rgba(255, 255, 255, 0);
