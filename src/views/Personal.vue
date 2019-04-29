@@ -89,12 +89,12 @@
                                     </el-timeline-item>
                                     <el-timeline-item timestamp="我的空间" placement="top">
                                     <el-card>
-                                        <h4>{{ ($store.state.user.userInfo.total_size/1024/1024/1024).toFixed(2) }} GB</h4>
+                                        <h4>{{ $global.easyFileSize($store.state.user.userInfo.total_size) }} </h4>
                                     </el-card>
                                     </el-timeline-item>
                                     <el-timeline-item timestamp="剩余空间" placement="top">
                                     <el-card>
-                                        <h4>{{ (($store.state.user.userInfo.total_size-$store.state.user.userInfo.use_size)/1024/1024/1024).toFixed(2) }} GB</h4>
+                                        <h4>{{ $global.easyFileSize($store.state.user.userInfo.total_size-$store.state.user.userInfo.use_size) }} </h4>
                                     </el-card>
                                     </el-timeline-item>
                                     <el-timeline-item timestamp="我的积分" placement="top">

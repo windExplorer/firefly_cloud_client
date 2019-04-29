@@ -2,7 +2,7 @@
   <div class="home page-container">
     <div class="tips">
       <el-progress type="circle" :percentage="parseFloat($store.state.user.userInfo.use_size/$store.state.user.userInfo.total_size*100) || 0" color="#8e71c7" :width="100" status="text">{{ (($store.state.user.userInfo.use_size/$store.state.user.userInfo.total_size)*100).toFixed(2) }} %</el-progress>
-      <p>{{ ($store.state.user.userInfo.use_size/1024/1024).toFixed(2) }} MB / {{ ($store.state.user.userInfo.total_size/1024/1024).toFixed(0) }} MB</p>
+      <p>{{ $global.easyFileSize($store.state.user.userInfo.use_size) }} / {{ $global.easyFileSize($store.state.user.userInfo.total_size) }} </p>
     </div>
     <el-tabs :tab-position="tabPosition" style="height: 100%;" v-model="$store.state.page.home.tab_active" @tab-click="TabClick">
       <el-tab-pane name="1" :ptitle="'全部文件'">
@@ -14,8 +14,8 @@
               <el-button type="primary" @click="open_createFolder"><i class="el-icon-folder-add el-icon--right"></i> 新建文件夹</el-button>
               <el-button-group :class="'btns'" v-show=" selected_file.length+selected_folder.length > 0 ">
                 <el-button type="primary" plain @click="fileShare" ><i class="el-icon-share el-icon--right"></i> 分享</el-button>
-                <el-button type="primary" plain @click="fileEdit"><i class="el-icon-edit el-icon--right"></i> 编辑</el-button>
-                <el-button type="primary" plain @click="fileDown"><i class="el-icon-download el-icon--right"></i> 下载</el-button>
+                <el-button type="primary" plain @click="fileEdit" v-show=" selected_file.length+selected_folder.length==1 "><i class="el-icon-edit el-icon--right"></i> 编辑</el-button>
+                <el-button type="primary" plain @click="fileDown" v-show=" selected_file.length==1 "><i class="el-icon-download el-icon--right"></i> 下载</el-button>
                 <el-button type="primary" plain @click="fileCopy"><i class="el-icon-copy-document el-icon--right"></i> 复制</el-button>
                 <el-button type="primary" plain @click="fileMove"><i class="el-icon-scissors el-icon--right"></i> 移动</el-button>
                 <el-button type="primary" plain @click="fileDel"><i class="el-icon-delete el-icon--right"></i> 删除</el-button>
@@ -49,21 +49,21 @@
             <div class="file-container">
 
                   <div class="file-box" :class="{'active': selected_folder.includes(item.id) }"  v-for="(item, index) in $store.state.data.home_nav_items[$store.state.data.home_nav_path.active_item].list.folder" :v-key="index">
-                    <i class="el-icon-success" :class="{'active': selected_folder.includes(item.id) }" @click="select_file(item.id, 1)"></i>
+                    <i class="el-icon-success" :class="{'active': selected_folder.includes(item.id) }" @click="select_file(item, 1)"></i>
                     <div class='img-box' @click="enter_folder(item)">
                       <img src='../assets/icons/folder.png' @contextmenu.prevent="test" />
                     </div>
                     <el-tooltip placement="bottom">
                       <div slot="content">{{item.name}}
                         <p v-show="item.remark_context"><br/>[描述] {{item.remark_context}}</p>
-                        <p v-show="item.size"><br/>[描述] {{ (parseInt(item.size)/1024/1024).toFixed(2) }}Mb</p>
+
                       </div>
                     <div class="filename ellipsis">{{ item.name }}</div>
                     </el-tooltip>
                   </div>
 
                   <div class="file-box" :class="{'active': selected_file.includes(item.id) }" v-for="(item, index) in $store.state.data.home_nav_items[$store.state.data.home_nav_path.active_item].list.file" :v-key="index">
-                    <i class="el-icon-success" :class="{'active': selected_file.includes(item.id) }" @click="select_file(item.id, 2)"></i>
+                    <i class="el-icon-success" :class="{'active': selected_file.includes(item.id) }" @click="select_file(item, 2)"></i>
                     <div class='img-box'>
                       <img src='../assets/icons/file1.png' class="file" />
                     </div>
@@ -143,16 +143,53 @@
       <el-tab-pane name="5" :ptitle="'我的上传'">
           <span slot="label"><i class="el-icon-user"></i> 我的上传</span>
           <vue-scroll>
-            <div class="tab tab1">
-                <el-row :gutter="20">
-                    <el-col :span="10">
-                        我的上传
-                    </el-col>
+            <div class="tab tab5">
+              <div class="btn-box" style="text-align:left;">
+                <el-button type="danger" round :disabled="myup_selected.length == 0" @click="delMyUp">删除</el-button>
+              </div>
+              <el-divider></el-divider>
+                <el-table 
+                  ref="multipleTable"
+                  :data="$store.state.data.myup"
+                  tooltip-effect="dark"
+                  style="width: 100%"
+                  stripe
+                  @selection-change="handleSelectionChange">
+                  <el-table-column type="selection" width="55"></el-table-column>
+                  <el-table-column label="日期" width='150'>
+                    <template slot-scope="scope" v-if="scope.row.regtime">{{ $global.formatTime(scope.row.regtime, 'Y-m-d') }}</template>
+                  </el-table-column>
+                  <el-table-column label="大小" show-overflow-tooltip width='150'>
+                    <template slot-scope="scope" v-if="scope.row.file">{{ $global.easyFileSize(scope.row.file.size)  }}</template>
+                  </el-table-column>
+                  <el-table-column show-overflow-tooltip label="文件名" width='450'>
                     
-                    <el-col :span="10">
-                        
-                    </el-col>
-                </el-row>
+                    <template slot-scope="scope" v-if="scope.row.file">
+                      
+                      {{ scope.row.file.name }}
+                      
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="位置" show-overflow-tooltip width='200'>
+                    
+                    <template slot-scope="scope" v-if="scope.row.folder">
+
+                      {{ scope.row.folder.path+scope.row.folder.name }}
+                      
+                    </template>
+                    
+                  </el-table-column>
+                  <el-table-column label="描述" show-overflow-tooltip min-width='100'>
+                    
+                    <template slot-scope="scope" v-if="scope.row.file">
+
+                      {{ scope.row.file.description_context }}
+                      
+                    </template>
+ 
+                  </el-table-column>
+                </el-table>
+                
             </div>
           </vue-scroll>
       </el-tab-pane>
@@ -173,6 +210,23 @@
         <div slot="footer" class="dialog-footer">
             <el-button @click="alert_createFolder = false">取 消</el-button>
             <el-button type="primary" @click="onSubmitCreateFolder">确 定</el-button>
+        </div>
+    </el-dialog>
+
+    <!-- 编辑 -->
+    <el-dialog :title="`编辑${alert_editTitle}`" :visible.sync="alert_edit" :width="`500px`">
+        <el-form :model="editForm">
+            <el-form-item label="名称" :label-width="'80px'">
+                <el-input v-model="editForm.name" autocomplete="off" autofocus="true" type='text'></el-input>
+            </el-form-item>
+            <el-form-item label="描述" :label-width="'80px'">
+                <el-input type="textarea" maxlength="140" show-word-limit v-model="editForm.context" rows="4"></el-input>
+            </el-form-item>
+
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="alert_edit = false">取 消</el-button>
+            <el-button type="primary" @click="onSubmitEdit">确 定</el-button>
         </div>
     </el-dialog>
 
@@ -251,7 +305,16 @@ export default {
       alert_upFolder: false,
       uplist: [],
       up_box: '',
-      up_box_height: ''
+      up_box_height: '',
+      myup_selected: [],
+      alert_edit: false,
+      editForm: {
+        name: '',
+        context: '',
+        id: '',
+        type: ''
+      },
+      alert_editTitle: '',
       
       
     }
@@ -303,21 +366,48 @@ export default {
           console.log(err)
       })
     },
-    select_file(id, type) {
+    select_file(item, type) {
+      let id = item.id
+      this.alert_editTitle = type == 1 ? `文件` : `文件夹`
+
       if(type == 1){
         let ind = this.selected_folder.indexOf(id)
         if(ind > -1){
           this.selected_folder.splice(ind, 1)
+          this.editForm = {
+            name: ``,
+            context: ``,
+            id: ``,
+            type: ``
+          }
         }else{
           this.selected_folder.push(id)
+          this.editForm = {
+            name: item.name,
+            context: item.remark_context,
+            id: item.id,
+            type: 1
+          }
         }
       }
       else if(type == 2){
         let ind = this.selected_file.indexOf(id)
         if(ind > -1){
           this.selected_file.splice(ind, 1)
+          this.editForm = {
+            name: ``,
+            context: ``,
+            id: ``,
+            type: ``
+          }
         }else{
           this.selected_file.push(id)
+          this.editForm = {
+            name: this.$global.getName_Ext(item.name).name,
+            context: item.description_context,
+            id: item.id,
+            type: 2
+          }
         }
       }
       
@@ -355,12 +445,11 @@ export default {
         })
         return
       }
-      let file_name_ind = fileObject.name.lastIndexOf('.')
-      let file_ext = fileObject.name.substr(file_name_ind+1)
-      let file_name = fileObject.name.substr(0, file_name_ind)
+
+      let file_name_ext = this.$global.getName_Ext(fileObject.name)
 
       if(this.$store.state.data.file_allow.allow_ext != '*')
-      if(!this.$store.state.data.file_allow.allow_ext.split(',').includes(file_ext)){
+      if(!this.$store.state.data.file_allow.allow_ext.split(',').includes(file_name_ext.ext)){
         this.$notify({
             title: '失败',
             message: `不在允许的文件类型内(上传文件类型为: ${this.$store.state.data.file_allow.allow_ext})`,
@@ -403,8 +492,11 @@ export default {
                   })
                   self.uplist[self.uplist.indexOf(status)].type = `秒传`
                   self.uplist[self.uplist.indexOf(status)].icon = `el-icon-success success`
-                  this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
+                  //this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
+                  let extend = res.data.extend
+                  this.$store.commit('data/setHomeNavItemsList', {a: this.$store.state.data.home_nav_path.active_item, b: {th: extend.th, list: {folder: extend.list.folder, file: extend.list.file}}})
                   this.$store.commit('user/setUseSize', fileObject.size)
+                  this.$store.commit('data/setMyUp', extend.my_up)
                   //console.log(this.$store.state.user.userInfo.use_size)
                   //this.$store.commit('user/setAvatar', res.data.net_path)
               }
@@ -452,8 +544,11 @@ export default {
                         })
                         self.uplist[self.uplist.indexOf(status)].type = `上传成功`
                         self.uplist[self.uplist.indexOf(status)].icon = `el-icon-success success`
-                        this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
+                        //this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
+                        let extend = res.data.extend
+                        this.$store.commit('data/setHomeNavItemsList', {a: this.$store.state.data.home_nav_path.active_item, b: {th: extend.th, list: {folder: extend.list.folder, file: extend.list.file}}})
                         this.$store.commit('user/setUseSize', fileObject.size)
+                        this.$store.commit('data/setMyUp', extend.my_up)
                         //console.log(this.$store.state.user.userInfo.use_size)
                         //this.$store.commit('user/setAvatar', res.data.url)
                     }else{
@@ -505,6 +600,9 @@ export default {
       //console.log(folder)
       //console.log(`进入${folder.name}文件夹`)
       //先判断store中有没有该文件夹信息，若有就直接获取
+      //清空选择
+      this.selected_file = []
+      this.selected_folder = []
       this.$store.dispatch('data/enterFolder', folder)
     },
     fileShare() {
@@ -512,7 +610,16 @@ export default {
     },
     fileEdit() {
       console.log(`编辑`)
-
+      //console.log(this.selected_file.length + this.selected_folder.length)
+      if(this.selected_file.length + this.selected_folder.length != 1){
+        this.$message({
+          message: '请选择一项进行编辑',
+          type: 'warning'
+        })
+        return
+      }
+      // type[1:编辑文件夹，2:编辑文件]
+      this.alert_edit = true
     },
     fileDown() {
       console.log(`下载`)
@@ -528,7 +635,67 @@ export default {
     },
     fileDel() {
       console.log(`删除`)
+      if(selected_file.length + selected_folder.length == 0){
+        this.$message({
+          message: '请至少选择一项操作',
+          type: 'warning'
+        })
+        return
+      }
+      data = {
+        folder: this.selected_folder,
+        file: this.selected_file
+      }
+      this.$confirm('此操作将删除该您选中的文件/文件夹, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            console.log(12)
+            this.$store.dispatch('data/del', data)
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });          
+          })
 
+    },
+    onSubmitEdit() {
+      console.log(`提交编辑`)
+      //console.log(this.editForm)
+      this.alert_edit = false
+      //this.selected_file = []
+      //this.selected_folder = []
+      this.$store.dispatch('data/edit', this.editForm)
+    },
+
+    /* 我的上传 */
+    handleSelectionChange(val) {
+      this.myup_selected = val
+      console.log(this.myup_selected)
+    },
+    delMyUp() {
+      if(this.myup_selected.length == 0)
+        this.$message({
+          message: '请至少选择一项再操作',
+          type: 'warning'
+        })
+      else
+        this.$confirm('此操作将删除该您的上传记录, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            console.log(12)
+            this.$store.dispatch('data/delMyUp', this.myup_selected)
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });          
+          })
+        
     },
     test() {
       this.$notify({
@@ -554,7 +721,7 @@ export default {
     // 获取文件
     this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
     this.$store.dispatch('data/setFileAllow')
-    
+    this.$store.dispatch('data/getMyUp')
   }
 }
 </script>

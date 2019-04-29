@@ -58,7 +58,7 @@ export default {
           this.$store.commit('user/setLogin', true)
           this.$store.commit('user/setLoginTime', res.time)
           this.$axios.defaults.headers.common['token'] = this.$store.state.user.userInfo.token
-          this.$axios.defaults.headers.common['username'] = this.$store.state.user.userInfo.username
+          this.$axios.defaults.headers.common['username'] = this.$store.state.user.userInfo.id
           this.$notify({
             title: '成功',
             message: res.msg,

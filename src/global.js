@@ -201,7 +201,7 @@ export default {
      * 获取文件大小
      * Returns a human readable filesize
      */
-    easyFileSize: function(size) {
+    easyFileSize: size => {
         size = parseInt(size)
         let mod = 1024
         //$units = explode(' ','B KB MB GB TB PB');
@@ -211,5 +211,13 @@ export default {
             size /= mod
         }
         return Math.round(size * 100)/100 + ' ' + units[i]
-    }
+    },
+    /* 获取文件名[原来是文件名+后缀]，返回对象 */
+    getName_Ext: name => {
+        let ind = name.lastIndexOf('.')
+        return {
+            name: name.substr(0, ind),
+            ext: name.substr(ind+1)
+        }
+    },
 }

@@ -26,6 +26,7 @@ export default {
             allow_ext: '',
             allow_size: ''
         },
+        myup: JSON.parse(window.sessionStorage.getItem('my_up')) || [],
 
         
     },
@@ -34,7 +35,8 @@ export default {
         
 
         setHomeNavItemsList(state, data) {
-            console.log(data)
+            // a:folder_id b.数据库返回的记录 th为当前目录详情，list分为该目录中的folder和file
+            //console.log(data)
             let folder = data.b.th
             let path,pid_path
             if(folder.pid_path && folder.pid_path != '')
@@ -95,6 +97,13 @@ export default {
 
         },
 
+        /* 设置我的上传记录 */
+        setMyUp(state, data) {
+            state.myup = data
+            console.log(data)
+            window.sessionStorage.setItem('my_up', JSON.stringify(data))
+        },
+
         /* 清空state */
         setNull(state) {
             console.log('清空state')
@@ -134,6 +143,79 @@ export default {
             }else{
                 context.dispatch('setHomeNav', data.id)
             }
+        },
+        // 获取我的上传记录
+        getMyUp: context => {
+            $apis.fileApi.getMyUp({type: 'month'}).then(res => {
+                res = res.data
+                //console.log(res)
+                if(res.code == 1){
+                    context.commit('setMyUp', res.data)
+                }else{
+                    console.log(res.msg)
+                }
+            })
+        },
+        //删除上传记录
+        delMyUp: (context, data) => {
+            let ids = []
+            data.map(item => {
+                ids.push(item.id)
+            })
+            $apis.fileApi.delMyUp({ids: ids}).then(res => {
+                res = res.data
+                //console.log(res)
+                if(res.code == 1){
+                    context.dispatch('getMyUp')
+                    $vue.$notify({
+                        title: '成功',
+                        message: res.msg,
+                        type: 'success'
+                      })
+                }else{
+                    
+                }
+            })
+        },
+        //编辑文件
+        edit: (context, data) => {
+            $apis.fileApi.edit(data).then(res => {
+                res = res.data
+                if(res.code == 1){
+                    $vue.$notify({
+                        title: '成功',
+                        message: res.msg,
+                        type: 'success'
+                    })
+                    context.dispatch('setHomeNav', context.state.home_nav_path.active_item)
+                }else{
+                    $vue.$notify({
+                        title: '失败',
+                        message: res.msg,
+                        type: 'error'
+                    })
+                }
+            })
+        },
+        // 删除文件
+        del: (context, data) => {
+            $apis.fileApi.del(data).then(res => {
+                res = res.data
+                if(res.code == 1){
+                    $vue.$notify({
+                        title: '成功',
+                        message: res.msg,
+                        type: 'success'
+                    })
+                    context.dispatch('setHomeNav', context.state.home_nav_path.active_item)
+                }else{
+                    $vue.$notify({
+                        title: '失败',
+                        message: res.msg,
+                        type: 'error'
+                    })
+                }
+            })
         }
 
     },

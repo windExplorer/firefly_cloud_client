@@ -29,6 +29,22 @@ export default {
                 console.log(complete)
               }
         })
+    },
+    /* 获取上传记录 */
+    getMyUp: (data) => {
+        return com.post('/api/file/get_my_up', data)
+    },
+    /* 删除上传记录 */
+    delMyUp: (data) => {
+        return com.post('/api/file/del_my_up', data)
+    },
+    /* 编辑文件/文件夹 */
+    edit: (data) => {
+        return com.post('/api/file/edit', data)
+    },
+    /* 删除文件/文件夹 */
+    del: (data) => {
+        return com.post('/api/file/del', data)
     }
     
 
