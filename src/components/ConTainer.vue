@@ -127,6 +127,8 @@ export default {
                 res = res.data
                 if(res.code == 1){
                     this.$store.commit('user/logout')
+                    this.$store.commit('data/setNull')
+                    this.$store.commit('page/setNull')
                     this.$axios.defaults.headers.common['token'] = ''
                     this.$axios.defaults.headers.common['username'] = ''
                     this.$notify({

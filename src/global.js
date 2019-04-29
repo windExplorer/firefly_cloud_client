@@ -23,9 +23,9 @@ export default {
   
       var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
       //file = this.files[0],
-      chunkSize = 2 * 1024 * 1024,                             // Read in chunks of 2MB
+      chunkSize = 5 * 1024 * 1024,                             // Read in chunks of 5MB
      // chunks = Math.ceil(file.size / chunkSize),
-      chunks = 100,
+      chunks = 20,
       currentChunk = 0,
       spark = new SparkMD5.ArrayBuffer(),
       fileReader = new FileReader();
@@ -195,5 +195,21 @@ export default {
             } 
             return ret
         })
+    },
+
+    /**
+     * 获取文件大小
+     * Returns a human readable filesize
+     */
+    easyFileSize: function(size) {
+        size = parseInt(size)
+        let mod = 1024
+        //$units = explode(' ','B KB MB GB TB PB');
+        let units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+        let i = 0
+        for (i = 0; size > mod; i++) {
+            size /= mod
+        }
+        return Math.round(size * 100)/100 + ' ' + units[i]
     }
 }

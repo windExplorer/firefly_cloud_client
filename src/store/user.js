@@ -32,7 +32,8 @@ export default {
         },
         logout(state) {
             sessionStorage.clear()
-            state = ''
+            state = null
+            window.location.reload()
         },
         set_getVcode(state, data) {
             state.getVcode = data
@@ -99,7 +100,7 @@ export default {
                 }
 
             }
-            console.log(context)
+            //console.log(context)
         }
     },
     getters: {

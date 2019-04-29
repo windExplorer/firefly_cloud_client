@@ -56,6 +56,11 @@ export default {
             state.title = data
             window.sessionStorage.setItem('title', data)
             window.document.title = data
+        },
+
+        /* 清空state */
+        setNull(state) {
+            state = null
         }
         
     },

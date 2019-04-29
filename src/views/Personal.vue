@@ -293,38 +293,6 @@ export default {
                     }
                 })
             })
-            return
-            let load = this.$loading({ fullscreen: true })
-            this.$apis.userApi.upAvatar(formData)
-            .then(res => {
-                load.close()
-                console.log(res)
-                res = res.data
-                if(res.code == 1){
-                    
-                    this.$notify({
-                        title: '成功',
-                        message: res.msg,
-                        type: 'success',
-                        duration: 1500
-                    })
-                }else{
-                    this.$notify.error({
-                        title: '错误',
-                        message: res.msg,
-                        duration: 2000
-                    })
-                }
-            })
-            .catch(err => {
-                load.close()
-                this.$notify.error({
-                    title: '错误',
-                    message: `请求出错`,
-                    duration: 2000
-                })
-                console.log(err)
-            })
         },
         TabClick(e) {
             //console.log(e.name)

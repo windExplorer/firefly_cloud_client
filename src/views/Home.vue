@@ -13,17 +13,16 @@
               <el-button type="primary" @click=" alert_upFolder = true "><i class="el-icon-upload el-icon--right"></i> 上传</el-button>
               <el-button type="primary" @click="open_createFolder"><i class="el-icon-folder-add el-icon--right"></i> 新建文件夹</el-button>
               <el-button-group :class="'btns'" v-show=" selected_file.length+selected_folder.length > 0 ">
-                <el-button type="primary" plain ><i class="el-icon-share el-icon--right"></i> 分享</el-button>
-                <el-button type="primary" plain ><i class="el-icon-edit el-icon--right"></i> 重命名</el-button>
-                <el-button type="primary" plain ><i class="el-icon-download el-icon--right"></i> 下载</el-button>
-                <el-button type="primary" plain ><i class="el-icon-copy-document el-icon--right"></i> 复制</el-button>
-                <el-button type="primary" plain ><i class="el-icon-scissors el-icon--right"></i> 移动</el-button>
-                <el-button type="primary" plain ><i class="el-icon-delete el-icon--right"></i> 删除</el-button>
+                <el-button type="primary" plain @click="fileShare" ><i class="el-icon-share el-icon--right"></i> 分享</el-button>
+                <el-button type="primary" plain @click="fileEdit"><i class="el-icon-edit el-icon--right"></i> 编辑</el-button>
+                <el-button type="primary" plain @click="fileDown"><i class="el-icon-download el-icon--right"></i> 下载</el-button>
+                <el-button type="primary" plain @click="fileCopy"><i class="el-icon-copy-document el-icon--right"></i> 复制</el-button>
+                <el-button type="primary" plain @click="fileMove"><i class="el-icon-scissors el-icon--right"></i> 移动</el-button>
+                <el-button type="primary" plain @click="fileDel"><i class="el-icon-delete el-icon--right"></i> 删除</el-button>
               </el-button-group>
               <p>
                 <el-breadcrumb separator-class="el-icon-arrow-right">
-                  <el-breadcrumb-item v-for="(item, index) in $store.state.data.home_nav_items" :v-key='index'>{{ item.name }}</el-breadcrumb-item>
-
+                  <el-breadcrumb-item v-for="(item, index) in $store.state.data.home_nav_path.active_path" :v-key='index' ><el-link :underline="false" type="primary" @click="enter_folder({id: parseInt($store.state.data.home_nav_path.active_pid_path[index]), name: item})">{{ item }}</el-link></el-breadcrumb-item>
                 </el-breadcrumb>
               </p>
 
@@ -51,10 +50,16 @@
 
                   <div class="file-box" :class="{'active': selected_folder.includes(item.id) }"  v-for="(item, index) in $store.state.data.home_nav_items[$store.state.data.home_nav_path.active_item].list.folder" :v-key="index">
                     <i class="el-icon-success" :class="{'active': selected_folder.includes(item.id) }" @click="select_file(item.id, 1)"></i>
-                    <div class='img-box'>
+                    <div class='img-box' @click="enter_folder(item)">
                       <img src='../assets/icons/folder.png' @contextmenu.prevent="test" />
                     </div>
+                    <el-tooltip placement="bottom">
+                      <div slot="content">{{item.name}}
+                        <p v-show="item.remark_context"><br/>[描述] {{item.remark_context}}</p>
+                        <p v-show="item.size"><br/>[描述] {{ (parseInt(item.size)/1024/1024).toFixed(2) }}Mb</p>
+                      </div>
                     <div class="filename ellipsis">{{ item.name }}</div>
+                    </el-tooltip>
                   </div>
 
                   <div class="file-box" :class="{'active': selected_file.includes(item.id) }" v-for="(item, index) in $store.state.data.home_nav_items[$store.state.data.home_nav_path.active_item].list.file" :v-key="index">
@@ -62,7 +67,13 @@
                     <div class='img-box'>
                       <img src='../assets/icons/file1.png' class="file" />
                     </div>
+                    <el-tooltip placement="bottom">
+                      <div slot="content">{{item.name}}
+                        <p v-show="item.description_context"><br/>[描述] {{item.description_context}}</p>
+                        <p v-show="item.size"><br/>[大小] {{ $global.easyFileSize(item.size) }}</p>
+                      </div>
                     <div class="filename ellipsis">{{ item.name }}</div>
+                    </el-tooltip>
                   </div>
                 
 
@@ -177,14 +188,14 @@
           >
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          <div class="el-upload__tip" slot="tip">只能上传{{ $store.state.data.file_allow.allow_ext }}文件，且不超过{{ ($store.state.data.file_allow.allow_size/1014/1024).toFixed(0) }}mb</div>
+          <div class="el-upload__tip" slot="tip">允许上传{{ $store.state.data.file_allow.allow_ext }}文件，且不超过{{ ($store.state.data.file_allow.allow_size/1014/1024).toFixed(0) }}mb</div>
       </el-upload>
     </el-dialog>
 
     
     <el-card class="box-card box-card-up" shadow="hover" v-show="up_box" :style="{ height: up_box_height }">
       <div slot="header" class="clearfix">
-        <span>卡片名称</span>
+        <span>上传记录</span>
         <i style="float: right; padding: 3px 0;margin-left: 10px;cursor:pointer;" class="el-icon-close" @click="show_upbox(`关闭`)"></i> <el-button style="float: right; padding: 3px 0" type="text" @click="show_upbox(up_box)">{{ up_box }}</el-button> 
       </div>
       <vue-scroll>
@@ -231,11 +242,11 @@ export default {
       createFolder: {
         name: '',
         remark_context: '',
-        folder_id: this.$store.state.data.home_nav_path.active_item
+        folder_id: ''
       },
       selected_file: [],
       selected_folder: [],
-      file_items: this.$store.state.data.home_nav_items[this.$store.state.data.home_nav_path.active_item].list,
+      //file_items: this.$store.state.data.home_nav_items[this.$store.state.data.home_nav_path.active_item].list,
       tab1_checked: false,
       alert_upFolder: false,
       uplist: [],
@@ -274,7 +285,6 @@ export default {
               })
               this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
               this.alert_createFolder = false
-              console.log(this.file_items)
           }else{
               this.$notify.error({
                   title: '错误',
@@ -349,7 +359,7 @@ export default {
       let file_ext = fileObject.name.substr(file_name_ind+1)
       let file_name = fileObject.name.substr(0, file_name_ind)
 
-
+      if(this.$store.state.data.file_allow.allow_ext != '*')
       if(!this.$store.state.data.file_allow.allow_ext.split(',').includes(file_ext)){
         this.$notify({
             title: '失败',
@@ -424,12 +434,15 @@ export default {
                       console.log(self.uplist)
                       let ind = self.uplist.indexOf(status)
                       self.uplist[ind].progress = complete
+                      if(complete == 100)
+                        self.uplist[ind].error = `上传成功`
                       
                       //console.log(complete)
                     }
               }).then(res => {
                     //load.close()
                     res = res.data
+                    self.uplist[self.uplist.indexOf(status)].error = res.msg
                     if(res.code == 1){
                         this.$notify({
                             title: '成功',
@@ -445,7 +458,6 @@ export default {
                         //this.$store.commit('user/setAvatar', res.data.url)
                     }else{
                       self.uplist[self.uplist.indexOf(status)].type = `上传失败`
-                      self.uplist[self.uplist.indexOf(status)].error = res.msg
                       self.uplist[self.uplist.indexOf(status)].progress = 0
                       self.uplist[self.uplist.indexOf(status)].icon = `el-icon-error error`
                         this.$notify.error({
@@ -457,16 +469,18 @@ export default {
                     }
                 })
                 .catch(err => {
-                  self.uplist[self.uplist.indexOf(status)].type = `上传失败`
+                  self.uplist[self.uplist.indexOf(status)].type = `请求出错`
                   self.uplist[self.uplist.indexOf(status)].error = `请求出错`
-                  self.uplist[self.uplist.indexOf(status)].progress = 0
-                  self.uplist[self.uplist.indexOf(status)].icon = `el-icon-error error`
+                  //self.uplist[self.uplist.indexOf(status)].progress = 0
+                  self.uplist[self.uplist.indexOf(status)].icon = `el-icon-info info`
                     //load.close()
                     this.$notify.error({
                         title: '错误',
                         message: `请求出错`,
                         duration: 2000
                     })
+                    this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
+                    this.$store.commit('user/setUseSize', fileObject.size)
                     console.log(err)
                 })
               }
@@ -486,6 +500,35 @@ export default {
       else if(text == `关闭`)
         this.up_box = ``
         
+    },
+    enter_folder(folder) {
+      //console.log(folder)
+      //console.log(`进入${folder.name}文件夹`)
+      //先判断store中有没有该文件夹信息，若有就直接获取
+      this.$store.dispatch('data/enterFolder', folder)
+    },
+    fileShare() {
+      console.log(`分享`)
+    },
+    fileEdit() {
+      console.log(`编辑`)
+
+    },
+    fileDown() {
+      console.log(`下载`)
+
+    },
+    fileCopy() {
+      console.log(`复制`)
+
+    },
+    fileMove() {
+      console.log(`移动`)
+
+    },
+    fileDel() {
+      console.log(`删除`)
+
     },
     test() {
       this.$notify({
@@ -596,6 +639,7 @@ export default {
   }
   .tools{
     height: auto;
+    min-height: 115px;
     text-align: left;
     .btns{
       margin-left: 10px;
@@ -667,6 +711,7 @@ export default {
       height: 20px;
       line-height: 20px;
       margin-top: 20px;
+      cursor: pointer;
     }
   }
   .file-box.active,
