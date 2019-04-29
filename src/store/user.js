@@ -73,7 +73,7 @@ export default {
             if(typeof(context.state.logintime) != 'undefined' && context.state.logintime != ''){
                 if(context.state.logintime < start){
                     console.log('需要重新验证登录!')
-                    $apis.userApi.checkLogin().the(res => {
+                    $apis.userApi.checkLogin().then(res => {
                         res = res.data
                         if(res.code == 1){
                             contxt.commit('setUInfo', res.data)
