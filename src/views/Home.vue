@@ -10,6 +10,7 @@
         <vue-scroll>
           <div class="tab tab1">
             <div class="tools">
+              <el-button type="success" icon="el-icon-refresh" circle @click="$store.dispatch('data/setHomeNav', $store.state.data.home_nav_path.active_item)"></el-button>
               <el-button type="primary" @click=" alert_upFolder = true "><i class="el-icon-upload el-icon--right"></i> 上传</el-button>
               <el-button type="primary" @click="open_createFolder"><i class="el-icon-folder-add el-icon--right"></i> 新建文件夹</el-button>
               <el-button-group :class="'btns'" v-show=" selected_file.length+selected_folder.length > 0 ">
@@ -35,7 +36,12 @@
               </div>
               <div class="thead">
                 <el-row>
-                  <el-col :span="12"><div class=""><el-checkbox v-model="tab1_checked" @change="tab1_allSelect">{{ tab1_checked ? `全不选` : `全选` }}</el-checkbox> 文件名 <span v-show="selected_file.length+selected_folder.length > 0">(已选中{{ selected_file.length+selected_folder.length }}个文件/文件夹)</span></div></el-col>
+                  <el-col :span="12">
+                    <div class="">
+                      <el-checkbox v-model="tab1_checked" @change="tab1_allSelect">{{ tab1_checked ? `全不选` : `全选` }}</el-checkbox>
+                       文件名 <span v-show="selected_file.length+selected_folder.length > 0">(已选中{{ selected_file.length+selected_folder.length }}个文件/文件夹)</span>
+                    </div>
+                  </el-col>
                   <el-col :span="6">
                     <div class="">
                       <el-divider direction="vertical"></el-divider>
@@ -230,6 +236,31 @@
         </div>
     </el-dialog>
 
+    <!-- 移动复制 -->
+    <el-dialog :title="`${alert_copyMoveTitle}`" :visible.sync="alert_copyMove" :width="`500px`">
+      <el-input
+        placeholder="输入关键字进行过滤"
+        v-model="folderTreeText">
+      </el-input>
+        <el-tree
+          :data="$store.state.data.folderTree"
+          show-checkbox
+          check-strictly
+          @check-change="changeFolderTreeSelect"
+          node-key="id"
+          ref="folderTree"
+          highlight-current
+          :filter-node-method="filterFolderTree"
+          check-on-click-node
+          :props="defaultProps">
+        </el-tree>
+
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="alert_copyMove = false">取 消</el-button>
+            <el-button type="primary" @click="onSubmitCopyMove">确 定</el-button>
+        </div>
+    </el-dialog>
+
     <el-dialog title="上传文件" :visible.sync="alert_upFolder" :width="`500px`">
       <el-upload
           class="avatar-uploader"
@@ -315,8 +346,13 @@ export default {
         type: ''
       },
       alert_editTitle: '',
-      
-      
+      alert_copyMove: false,
+      alert_copyMoveTitle: '',
+      defaultProps: {
+       children: 'child',
+        label: 'name'
+      },
+      folderTreeText: '',    
     }
   },
   methods: {
@@ -347,6 +383,7 @@ export default {
                   duration: 1500
               })
               this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
+              this.$store.dispatch('data/getFolderMenu')
               this.alert_createFolder = false
           }else{
               this.$notify.error({
@@ -628,11 +665,24 @@ export default {
     },
     fileCopy() {
       console.log(`复制`)
+      this.alert_copyMoveTitle = `复制`
+      this.alert_copyMove = true
 
     },
     fileMove() {
       console.log(`移动`)
 
+    },
+    filterFolderTree(value, data) {
+      if (!value)
+        return true
+      return data.name.indexOf(value) !== -1
+    },
+    // 该结点对象，该结点是否被选中，该结点是否有子节点被选中
+    changeFolderTreeSelect(a, b, c) {
+      if(b){
+        this.$refs.folderTree.setCheckedKeys([a.id]);
+      }
     },
     fileDel() {
       console.log(`删除`)
@@ -672,6 +722,56 @@ export default {
       //this.selected_file = []
       //this.selected_folder = []
       this.$store.dispatch('data/edit', this.editForm)
+    },
+    onSubmitCopyMove() {
+      console.log(`提交${this.alert_copyMoveTitle}`)
+      let node = this.$refs.folderTree.getCheckedNodes()
+      let key = this.$refs.folderTree.getCheckedKeys()
+      //console.log(node)
+      //console.log(key)
+      //提交判断 不能移动和复制到当前目录中，同时后台判断目标文件夹中是否存在同名的文件/文件夹，可以存在同名的文件和文件夹，但不能存在同名的文件和同名的文件夹
+      //查看选中文件夹是否在此文件夹中
+      //第一个循环判断key中是否存在this.selected_folder
+      //this.selected_folder.splice(0, -1, this.$store.state.data.home_nav_path.active_item)
+      let pid_path = (node[0].pid_path+node[0].id).split('/')
+      pid_path = pid_path.map(item => {
+        return +item
+      })
+      //console.log(pid_path)
+      //console.log(this.selected_folder)
+
+      if(key[0] == this.$store.state.data.home_nav_path.active_item){
+        this.$message({
+            message: `不能${this.alert_copyMoveTitle}到当前目录以及自身与自身的子目录`,
+            type: 'error'
+        })
+        return
+      }
+      for(let item of pid_path){
+        if(this.selected_folder.includes(item)){
+          this.$message({
+            message: `不能${this.alert_copyMoveTitle}到当前目录以及自身与自身的子目录`,
+            type: 'error'
+          })
+          return
+        }
+      }
+      //提交更改
+      //this.selected_folder.splice(0, 1)
+      let data = {
+        folder: this.selected_folder,
+        file: this.selected_file,
+        folder_id: this.$store.state.data.home_nav_path.active_item,
+        to_node: node[0],
+        to_key: key[0]
+      }
+      console.log(data)
+      if(this.alert_copyMoveTitle == `复制`)
+        this.$store.dispatch('data/copy', data)
+      else if(this.alert_copyMoveTitle == `移动`)
+        this.$store.dispatch('data/move', data)
+      this.alert_copyMove = false
+      
     },
 
     /* 我的上传 */
@@ -727,7 +827,12 @@ export default {
     this.$store.dispatch('data/setFileAllow')
     this.$store.dispatch('data/getMyUp')
     this.$store.dispatch('data/getFolderMenu')
-  }
+  },
+  watch: {
+    folderTreeText(val) {
+      this.$refs.folderTree.filter(val)
+    }
+  },
 }
 </script>
 

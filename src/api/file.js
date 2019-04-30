@@ -50,6 +50,14 @@ export default {
     getFolderMenu: () => {
         return com.post('/api/file/getFolderMenu')
     },
+    /* 复制文件/文件夹 */
+    copy: (data) => {
+        return com.post('/api/file/copy', data)
+    },
+    /* 移动文件/文件夹 */
+    move: (data) => {
+        return com.post('/api/file/move', data)
+    },
     
 
 }

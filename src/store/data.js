@@ -27,6 +27,7 @@ export default {
             allow_size: ''
         },
         myup: JSON.parse(window.sessionStorage.getItem('my_up')) || [],
+        folderTree: JSON.parse(window.sessionStorage.getItem('folderTree')) || [],
 
         
     },
@@ -104,6 +105,12 @@ export default {
             window.sessionStorage.setItem('my_up', JSON.stringify(data))
         },
 
+        /* 设置目录树 */
+        setFolderTree(state, data) {
+            state.folderTree = data
+            window.sessionStorage.setItem('folderTree', JSON.stringify(data))
+        },
+
         /* 清空state */
         setNull(state) {
             console.log('清空state')
@@ -170,10 +177,16 @@ export default {
                     $vue.$notify({
                         title: '成功',
                         message: res.msg,
-                        type: 'success'
+                        type: 'success',
+                        duration: 1500
                       })
                 }else{
-                    
+                    $vue.$notify({
+                        title: '失败',
+                        message: res.msg,
+                        type: 'error',
+                        duration: 2000
+                      })
                 }
             })
         },
@@ -185,14 +198,16 @@ export default {
                     $vue.$notify({
                         title: '成功',
                         message: res.msg,
-                        type: 'success'
+                        type: 'success',
+                        duration: 1500
                     })
                     context.dispatch('setHomeNav', context.state.home_nav_path.active_item)
                 }else{
                     $vue.$notify({
                         title: '失败',
                         message: res.msg,
-                        type: 'error'
+                        type: 'error',
+                        duration: 2000
                     })
                 }
             })
@@ -208,9 +223,12 @@ export default {
                     $vue.$notify({
                         title: '成功',
                         message: res.msg,
-                        type: 'success'
+                        type: 'success',
+                        duration: 1500
                     })
                     context.commit('setHomeNavItemsList', res.data.home_nav)
+                    context.dispatch('getFolderMenu')
+                    
                     $vue.$store.commit('user/setUInfo', res.data.userInfo)
                     load.close()
                 }else{
@@ -218,16 +236,75 @@ export default {
                     $vue.$notify({
                         title: '失败',
                         message: res.msg,
-                        type: 'error'
+                        type: 'error',
+                        duration: 2000
                     })
                 }
             })
+        },
+        //刷新文件夹
+        refreshFolder: (context, data) => {
+
         },
         //获取无限极菜单(全部)
         getFolderMenu: (context) => {
             $apis.fileApi.getFolderMenu().then(res => {
                 res = res.data
                 console.log(res)
+                context.commit('setFolderTree', res.data)
+                
+            })
+        },
+        //复制文件/文件夹到
+        copy: (context, data) => {
+            let load = $vue.$loading({ fullscreen: true })
+            $apis.fileApi.copy(data).then(res => {
+                res = res.data
+                console.log(res)
+                if(res.code == 1){
+                    $vue.$notify({
+                        title: '成功',
+                        message: res.msg+' 【若找不到复制后的文件请点击左上角刷新按钮！】',
+                        type: 'success',
+                        duration: 2000
+                    })
+                    context.dispatch('getFolderMenu')
+                    load.close()
+                }else{
+                    load.close()
+                    $vue.$notify({
+                        title: '失败',
+                        message: res.msg,
+                        type: 'error',
+                        duration: 2000
+                    })
+                }
+            })
+        },
+        //移动文件/文件夹到
+        move: (context, data) => {
+            let load = $vue.$loading({ fullscreen: true })
+            $apis.fileApi.move(data).then(res => {
+                res = res.data
+                console.log(res)
+                if(res.code == 1){
+                    $vue.$notify({
+                        title: '成功',
+                        message: res.msg+' 【若找不到移动后的文件请点击左上角刷新按钮！】',
+                        type: 'success',
+                        duration: 2000
+                    })
+                    context.dispatch('getFolderMenu')
+                    load.close()
+                }else{
+                    load.close()
+                    $vue.$notify({
+                        title: '失败',
+                        message: res.msg,
+                        type: 'error',
+                        duration: 2000
+                    })
+                }
             })
         }
 
