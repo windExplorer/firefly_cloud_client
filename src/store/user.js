@@ -76,7 +76,7 @@ export default {
                     $apis.userApi.checkLogin().then(res => {
                         res = res.data
                         if(res.code == 1){
-                            contxt.commit('setUInfo', res.data)
+                            context.commit('setUInfo', res.data)
                             context.commit('setLogin', true)
                             context.commit('setLoginTime', res.time)
                             $vue.$axios.defaults.headers.common['token'] = res.data.token

@@ -495,7 +495,7 @@ export default {
                   //this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
                   let extend = res.data.extend
                   this.$store.commit('data/setHomeNavItemsList', {a: this.$store.state.data.home_nav_path.active_item, b: {th: extend.th, list: {folder: extend.list.folder, file: extend.list.file}}})
-                  this.$store.commit('user/setUseSize', fileObject.size)
+                  //this.$store.commit('user/setUseSize', fileObject.size)
                   this.$store.commit('data/setMyUp', extend.my_up)
                   //console.log(this.$store.state.user.userInfo.use_size)
                   //this.$store.commit('user/setAvatar', res.data.net_path)
@@ -603,6 +603,7 @@ export default {
       //清空选择
       this.selected_file = []
       this.selected_folder = []
+      this.tab1_checked = false
       this.$store.dispatch('data/enterFolder', folder)
     },
     fileShare() {
@@ -635,24 +636,27 @@ export default {
     },
     fileDel() {
       console.log(`删除`)
-      if(selected_file.length + selected_folder.length == 0){
+      if(this.selected_file.length + this.selected_folder.length == 0){
         this.$message({
           message: '请至少选择一项操作',
           type: 'warning'
         })
         return
       }
-      data = {
+      let data = {
         folder: this.selected_folder,
-        file: this.selected_file
+        file: this.selected_file,
+        folder_id: this.$store.state.data.home_nav_path.active_item
       }
       this.$confirm('此操作将删除该您选中的文件/文件夹, 是否继续?', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-            console.log(12)
             this.$store.dispatch('data/del', data)
+            this.selected_file = []
+            this.selected_folder = []
+            this.tab1_checked = false
           }).catch(() => {
             this.$message({
               type: 'info',
@@ -722,6 +726,7 @@ export default {
     this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
     this.$store.dispatch('data/setFileAllow')
     this.$store.dispatch('data/getMyUp')
+    this.$store.dispatch('data/getFolderMenu')
   }
 }
 </script>

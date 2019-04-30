@@ -45,7 +45,11 @@ export default {
     /* 删除文件/文件夹 */
     del: (data) => {
         return com.post('/api/file/del', data)
-    }
+    },
+    /* 获取我的文件夹无限极菜单 */
+    getFolderMenu: () => {
+        return com.post('/api/file/getFolderMenu')
+    },
     
 
 }

@@ -100,7 +100,7 @@ export default {
         /* 设置我的上传记录 */
         setMyUp(state, data) {
             state.myup = data
-            console.log(data)
+            //console.log(data)
             window.sessionStorage.setItem('my_up', JSON.stringify(data))
         },
 
@@ -199,6 +199,9 @@ export default {
         },
         // 删除文件
         del: (context, data) => {
+            //console.log(data)
+            let load = $vue.$loading({ fullscreen: true })
+            //console.log($vue)
             $apis.fileApi.del(data).then(res => {
                 res = res.data
                 if(res.code == 1){
@@ -207,14 +210,24 @@ export default {
                         message: res.msg,
                         type: 'success'
                     })
-                    context.dispatch('setHomeNav', context.state.home_nav_path.active_item)
+                    context.commit('setHomeNavItemsList', res.data.home_nav)
+                    $vue.$store.commit('user/setUInfo', res.data.userInfo)
+                    load.close()
                 }else{
+                    load.close()
                     $vue.$notify({
                         title: '失败',
                         message: res.msg,
                         type: 'error'
                     })
                 }
+            })
+        },
+        //获取无限极菜单(全部)
+        getFolderMenu: (context) => {
+            $apis.fileApi.getFolderMenu().then(res => {
+                res = res.data
+                console.log(res)
             })
         }
 
