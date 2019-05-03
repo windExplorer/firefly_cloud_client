@@ -11,13 +11,15 @@ import qs from 'qs'
 import global from './global'
 import vuescroll from 'vuescroll'
 import './plugins/spark-md5.min.js'
-
+import clipboard from 'clipboard'
 
 
 Vue.prototype.$axios = axios
 Vue.prototype.$qs = qs
 Vue.prototype.$apis = apis 
 Vue.prototype.$global = global 
+Vue.prototype.$clipboard = clipboard 
+
 Vue.config.productionTip = false
 
 Vue.use(element)

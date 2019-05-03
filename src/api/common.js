@@ -5,8 +5,8 @@ let ss = {
     id: 0
 }
 
-if(window.sessionStorage.getItem('userInfo') != null){
-    ss = JSON.parse(window.sessionStorage.getItem('userInfo'))
+if(window.localStorage.getItem('userInfo') != null){
+    ss = JSON.parse(window.localStorage.getItem('userInfo'))
 }
 
 axios.defaults.headers.common['token'] = ss.token

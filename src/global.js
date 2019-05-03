@@ -220,4 +220,38 @@ export default {
             ext: name.substr(ind+1)
         }
     },
+    // 下载文件
+    download (data, file) {
+        if (!data) {
+            return
+        }
+        //console.log(data)
+        //return
+        let url = window.URL.createObjectURL(new Blob([data]))
+        let link = document.createElement('a')
+        link.style.display = 'none'
+        link.href = url
+        link.setAttribute('download', file.name)
+
+        document.body.appendChild(link)
+        link.click()
+    },
+    //复制
+    copy(){
+        let clipboard = new $vue.$clipboard('.copyBtn')
+        clipboard.on('success', function () {
+            console.log('复制成功')
+            $vue.$message({
+                message: '复制成功',
+                type: 'success'
+            })
+        })
+        clipboard.on('error', function () {
+            console.log('复制失败')
+            $vue.$message({
+                message: '复制失败，请手动复制',
+                type: 'error'
+            })
+        })
+    },
 }

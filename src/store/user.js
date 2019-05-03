@@ -5,16 +5,16 @@ export default {
     namespaced: true,
     
     state: {
-        userInfo: JSON.parse(window.sessionStorage.getItem('userInfo')) || ``,
-        isLogin: window.sessionStorage.getItem('isLogin') || false,
-        getVcode: parseInt(window.localStorage.getItem('getVcode')) || 0,
-        logintime: window.sessionStorage.getItem('logintime') || '',
+        userInfo: JSON.parse(localStorage.getItem('userInfo')) || ``,
+        isLogin: localStorage.getItem('isLogin') || false,
+        getVcode: parseInt(localStorage.getItem('getVcode')) || 0,
+        logintime: localStorage.getItem('logintime') || '',
     },
     mutations: {
         setUInfo(state, data) {
             //console.log(data)
             state.userInfo = data
-            window.sessionStorage.setItem('userInfo', JSON.stringify(data))
+            localStorage.setItem('userInfo', JSON.stringify(data))
         },
         setLogin(state, data) {
             if(data == 'false'){
@@ -24,24 +24,25 @@ export default {
                 data = true
             }
             state.isLogin = data      
-            window.sessionStorage.setItem('isLogin', data)
+            localStorage.setItem('isLogin', data)
         },
         setLoginTime(state, data) {
             state.logintime = data
-            window.sessionStorage.setItem('logintime', data)
+            localStorage.setItem('logintime', data)
         },
         logout(state) {
+            localStorage.clear()
             sessionStorage.clear()
             state = null
             window.location.reload()
         },
         set_getVcode(state, data) {
             state.getVcode = data
-            window.localStorage.setItem('getVcode', data)
+            localStorage.setItem('getVcode', data)
         },
         setEmail(state, data) {
             state.userInfo.email = data
-            window.sessionStorage.setItem('userInfo', JSON.stringify(state.userInfo))
+            localStorage.setItem('userInfo', JSON.stringify(state.userInfo))
         },
         setBase(state, data) {
             //昵称，性别，出生日期，个性签名，个人描述
@@ -50,19 +51,19 @@ export default {
             state.userInfo.born = data.born
             state.userInfo.sign_context = data.sign_context
             state.userInfo.description_context = data.description_context
-            window.sessionStorage.setItem('userInfo', JSON.stringify(state.userInfo))
+            localStorage.setItem('userInfo', JSON.stringify(state.userInfo))
         },
         setAvatar(state, data) {
             //头像
             state.userInfo.avatar = data
-            window.sessionStorage.setItem('userInfo', JSON.stringify(state.userInfo))
+            localStorage.setItem('userInfo', JSON.stringify(state.userInfo))
         },
         setUseSize(state, data) {
             //设置使用空间
             //console.log(data)
             //console.log(state.userInfo.use_size)
             state.userInfo.use_size = parseInt(state.userInfo.use_size) + parseInt(data)
-            window.sessionStorage.setItem('userInfo', JSON.stringify(state.userInfo))
+            localStorage.setItem('userInfo', JSON.stringify(state.userInfo))
         }
     },
     actions: {
@@ -80,14 +81,28 @@ export default {
                             context.commit('setLogin', true)
                             context.commit('setLoginTime', res.time)
                             $vue.$axios.defaults.headers.common['token'] = res.data.token
-                            $vue.$axios.defaults.headers.common['username'] = res.data.username
+                            $vue.$axios.defaults.headers.common['username'] = res.data.id
                             $vue.$notify({
                                 title: '成功',
                                 message: res.msg,
                                 type: 'success',
                                 duration: 1500
                             })
+                            $vue.$store.dispatch('data/setHomeNav', $vue.$store.state.data.home_nav_path.active_item)
+                            $vue.$store.dispatch('data/setFileAllow')
+                            $vue.$store.dispatch('data/getMyUp')
+                            $vue.$store.dispatch('data/getMyDown')
+                            $vue.$store.dispatch('share/getMyShare')
+                            $vue.$store.dispatch('data/getFolderMenu')
                             //this.$router.push('/')
+                        }else if(res.code == -100){
+                            $vue.$notify({
+                                title: '警告',
+                                message: res.msg,
+                                type: 'warnning',
+                                duration: 1500
+                            })
+                            $vue.$router.push('/login')
                         }else{
                             $vue.$notify.error({
                                 title: '错误',
@@ -97,6 +112,13 @@ export default {
                             $vue.$router.push('/login')
                         }
                     })
+                }else{
+                    $vue.$store.dispatch('data/setHomeNav', $vue.$store.state.data.home_nav_path.active_item)
+                    $vue.$store.dispatch('data/setFileAllow')
+                    $vue.$store.dispatch('data/getMyUp')
+                    $vue.$store.dispatch('data/getMyDown')
+                    $vue.$store.dispatch('share/getMyShare')
+                    $vue.$store.dispatch('data/getFolderMenu')
                 }
 
             }

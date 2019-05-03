@@ -3,6 +3,7 @@
         <el-tabs :tab-position="tabPosition" style="height: 100%;" v-model="$store.state.page.personal.tab_active" @tab-click="TabClick">
             <el-tab-pane name="1" :ptitle="'基本资料'">
                 <span slot="label"><i class="el-icon-user"></i> 基本资料</span>
+                <vue-scroll>
                 <div class="tab tab1">
                     <el-row :gutter="20">
                         <el-col :span="12" :offset="6">
@@ -37,6 +38,7 @@
                     </el-row>
                     
                 </div>
+                </vue-scroll>
             </el-tab-pane>
 
             <el-tab-pane name="2" :ptitle="'我的头像'">
@@ -212,6 +214,14 @@ export default {
                         type: 'success',
                         duration: 1500
                     })
+                }else if(res.code == -100){
+                    this.$notify({
+                        title: '警告',
+                        message: res.msg,
+                        type: 'warnning',
+                        duration: 1500
+                    })
+                    this.$router.push('/login')
                 }else{
                     this.$notify.error({
                         title: '错误',

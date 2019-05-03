@@ -41,6 +41,11 @@ const router =  new Router({
           component: () => import('./views/Dynamic.vue')
         },
         {
+          path: 'share/:link',
+          name: 'share',
+          component: () => import('./views/Share.vue')
+        },
+        {
           path: 'message',
           name: 'message',
           meta: {            
@@ -73,7 +78,8 @@ const router =  new Router({
       path: '/resetpwd',
       name: 'resetpwd',
       component: () => import('./views/Resetpwd.vue')
-    }
+    },
+    
     
   ]
 })
@@ -86,7 +92,7 @@ router.beforeEach((to, from, next) => {
     } else {
       //是否在登录状态下
       //console.log(window.sessionStorage.getItem('isLogin'))
-      if(window.sessionStorage.getItem('isLogin'))
+      if(window.localStorage.getItem('isLogin'))
         next()
       else
         next('/login')

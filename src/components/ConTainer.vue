@@ -6,7 +6,7 @@
                 <ul class="left">
                     <li v-show="$store.state.user.isLogin"><router-link to='/'>网盘</router-link></li>
                     <li><router-link to='/dynamic'>动态</router-link></li>
-                    <li v-show="$store.state.user.isLogin"><router-link to='/message'>消息</router-link></li>
+                    <li v-show="false" ><router-link to='/message'>消息</router-link></li>
                 </ul>
                 <ul class="right">
                     <el-popover
@@ -15,7 +15,7 @@
                         trigger="hover">
                         <el-card class="box-card">
                         <div slot="header" class="clearfix">
-                            <span><img :src="$store.getters['user/getUserInfo'].avatar || `../assets/imgs/head.jpeg`" width="50" height="50" alt=""></span>
+                            <span><img :src="$store.getters['user/getUserInfo'].avatar || require(`../assets/imgs/head.jpeg`)" width="50" height="50" alt=""></span>
                             <span class="name">{{ $store.state.user.userInfo.nickname || `游客` }}</span>
                         </div>
                         <div>
@@ -30,7 +30,7 @@
                             </ul>
                         </div>
                         </el-card>
-                        <li slot="reference"><img :src="$store.getters['user/getUserInfo'].avatar || `../assets/imgs/head.jpeg`" alt=""> <span class="name">{{ $store.state.user.userInfo.nickname || `游客` }}</span> <span class="menu"><i class="el-icon-arrow-down"></i></span></li>
+                        <li slot="reference"><img :src="$store.getters['user/getUserInfo'].avatar || require(`../assets/imgs/head.jpeg`)" alt=""> <span class="name">{{ $store.state.user.userInfo.nickname || `游客` }}</span> <span class="menu"><i class="el-icon-arrow-down"></i></span></li>
                     </el-popover>
                 </ul>
 
@@ -48,16 +48,16 @@
             </el-main>
         </el-container>
         <!-- 其他 -->
-        <el-dialog title="修改密码" :visible.sync="pwdVisible" :width="`500px`">
+        <el-dialog title="修改密码" :visible.sync="pwdVisible" :width="`480px`">
             <el-form :model="pwdForm">
-                <el-form-item label="原密码" :label-width="formLabelWidth">
-                    <el-input v-model="pwdForm.password1" autocomplete="off" autofocus="true" type='password'></el-input>
+                <el-form-item label="原密码" label-width="80px">
+                    <el-input v-model="pwdForm.password1" autocomplete="off" autofocus="true" type='password' show-password></el-input>
                 </el-form-item>
-                <el-form-item label="新密码" :label-width="formLabelWidth">
-                    <el-input v-model="pwdForm.password2" autocomplete="off" type='password'></el-input>
+                <el-form-item label="新密码" label-width="80px">
+                    <el-input v-model="pwdForm.password2" autocomplete="off" type='password' show-password></el-input>
                 </el-form-item>
-                <el-form-item label="确认密码" :label-width="formLabelWidth">
-                    <el-input v-model="pwdForm.password3" autocomplete="off" type='password'></el-input>
+                <el-form-item label="确认密码" label-width="80px">
+                    <el-input v-model="pwdForm.password3" autocomplete="off" type='password' show-password></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -66,18 +66,18 @@
             </div>
         </el-dialog>
 
-        <el-dialog title="修改邮箱" :visible.sync="emailVisible" :width="`500px`">
+        <el-dialog title="修改邮箱" :visible.sync="emailVisible" :width="`480px`">
             <el-form :model="emailForm">
-                <el-form-item label="验证码" :label-width="formLabelWidth">
+                <el-form-item label="验证码" label-width="80px">
                     <el-input v-model="emailForm.vcode" autocomplete="off" autofocus="true" type='text'></el-input>
                     <div class="getVcode">
                         <el-button type="primary" round size='mini' @click="getVcode" :disabled="allow_getVcode">获取验证码 <span v-show="timer">{{ `(${timer})` }}</span></el-button>
                     </div>
                 </el-form-item>
-                <el-form-item label="新邮箱" :label-width="formLabelWidth">
+                <el-form-item label="新邮箱" label-width="80px">
                     <el-input v-model="emailForm.email" autocomplete="off" type='email'></el-input>
                 </el-form-item>
-                <el-form-item label="确认邮箱" :label-width="formLabelWidth">
+                <el-form-item label="确认邮箱" label-width="80px">
                     <el-input v-model="emailForm.email2" autocomplete="off" type='email'></el-input>
                 </el-form-item>
             </el-form>
@@ -125,26 +125,19 @@ export default {
             .then(res => {
                 load.close()
                 res = res.data
-                if(res.code == 1){
-                    this.$store.commit('user/logout')
-                    this.$store.commit('data/setNull')
-                    this.$store.commit('page/setNull')
-                    this.$axios.defaults.headers.common['token'] = ''
-                    this.$axios.defaults.headers.common['username'] = ''
-                    this.$notify({
-                        title: '成功',
-                        message: res.msg,
-                        type: 'success',
-                        duration: 1500
-                    })
-                    this.$router.push('/login')
-                }else{
-                    this.$notify.error({
-                        title: '错误',
-                        message: res.msg,
-                        duration: 2000
-                    })
-                }
+                this.$store.commit('user/logout')
+                this.$store.commit('data/setNull')
+                this.$store.commit('page/setNull')
+                this.$axios.defaults.headers.common['token'] = ''
+                this.$axios.defaults.headers.common['username'] = ''
+                this.$notify({
+                    title: '成功',
+                    message: res.msg,
+                    type: 'success',
+                    duration: 1500
+                })
+                this.$router.push('/login')
+
             })
             .catch(err => {
                 load.close()
@@ -190,6 +183,14 @@ export default {
                     })
                     //修改密码成功就重新登录
                     this.$router.push('/login')
+                }else if(res.code == -100){
+                    this.$notify({
+                        title: '警告',
+                        message: res.msg,
+                        type: 'warnning',
+                        duration: 1500
+                    })
+                    this.$router.push('/login')
                 }else{
                     this.$notify.error({
                         title: '错误',
@@ -226,6 +227,14 @@ export default {
                     this.emailForm.vcode = ''
                     this.emailForm.email = ''
                     this.emailForm.email2 = ''
+                }else if(res.code == -100){
+                    this.$notify({
+                        title: '警告',
+                        message: res.msg,
+                        type: 'warnning',
+                        duration: 1500
+                    })
+                    this.$router.push('/login')
                 }else{
                     this.$notify.error({
                         title: '错误',
@@ -265,6 +274,14 @@ export default {
                     this.timer = 60
                     this.allow_getVcode = true
                     this.setTimer()
+                }else if(res.code == -100){
+                    this.$notify({
+                        title: '警告',
+                        message: res.msg,
+                        type: 'warnning',
+                        duration: 1500
+                    })
+                    this.$router.push('/login')
                 }else{
                     this.$notify.error({
                         title: '错误',
@@ -324,8 +341,11 @@ export default {
 
 <style lang="scss">
 $color_1: #FF6F61;
+$color_1: #30C0F5;
 $color_2: #23B9FD;
+$color_2: #FF6F61;
 $color_3: rgba(255, 111, 97, 1);
+$color_3: rgba(48, 192, 245, 1);
 .el-popover{
     padding: 0 !important;
     border: none !important;
@@ -359,7 +379,7 @@ $color_3: rgba(255, 111, 97, 1);
                 color: #333;
             }
             li:hover{
-                background: rgba(255, 111, 97, .3);
+                background: rgba(251, 0, 255, .1);
                 color: #555;
             }
         }

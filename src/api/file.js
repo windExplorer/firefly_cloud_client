@@ -38,6 +38,14 @@ export default {
     delMyUp: (data) => {
         return com.post('/api/file/del_my_up', data)
     },
+    /* 获取下载记录 */
+    getMyDown: (data) => {
+        return com.post('/api/file/get_my_down', data)
+    },
+    /* 删除下载记录 */
+    delMyDown: (data) => {
+        return com.post('/api/file/del_my_down', data)
+    },
     /* 编辑文件/文件夹 */
     edit: (data) => {
         return com.post('/api/file/edit', data)
@@ -57,6 +65,16 @@ export default {
     /* 移动文件/文件夹 */
     move: (data) => {
         return com.post('/api/file/move', data)
+    },
+    /* 下载文件 */
+    download: (data) => {
+        return com.post('/api/file/download', data)
+        /* return com({
+            method: 'post',
+            url: '/api/file/download',
+            data: data,
+            responseType: 'blob'
+        }) */
     },
     
 

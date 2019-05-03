@@ -11,15 +11,15 @@
           <div class="tab tab1">
             <div class="tools">
               <el-button type="success" icon="el-icon-refresh" circle @click="$store.dispatch('data/setHomeNav', $store.state.data.home_nav_path.active_item)"></el-button>
-              <el-button type="primary" @click=" alert_upFolder = true "><i class="el-icon-upload el-icon--right"></i> 上传</el-button>
-              <el-button type="primary" @click="open_createFolder"><i class="el-icon-folder-add el-icon--right"></i> 新建文件夹</el-button>
+              <el-button type="primary" @click=" alert_upFolder = true" ><i class="el-icon-upload el-icon--right"></i> 上传</el-button>
+              <el-button type="primary" @click="open_createFolder" ><i class="el-icon-folder-add el-icon--right"></i> 新建文件夹</el-button>
               <el-button-group :class="'btns'" v-show=" selected_file.length+selected_folder.length > 0 ">
-                <el-button type="primary" plain @click="fileShare" ><i class="el-icon-share el-icon--right"></i> 分享</el-button>
-                <el-button type="primary" plain @click="fileEdit" v-show=" selected_file.length+selected_folder.length==1 "><i class="el-icon-edit el-icon--right"></i> 编辑</el-button>
-                <el-button type="primary" plain @click="fileDown" v-show=" selected_file.length==1 "><i class="el-icon-download el-icon--right"></i> 下载</el-button>
-                <el-button type="primary" plain @click="fileCopy"><i class="el-icon-copy-document el-icon--right"></i> 复制</el-button>
-                <el-button type="primary" plain @click="fileMove"><i class="el-icon-scissors el-icon--right"></i> 移动</el-button>
-                <el-button type="primary" plain @click="fileDel"><i class="el-icon-delete el-icon--right"></i> 删除</el-button>
+                <el-button type="primary" plain @click="fileShare" size="mini"><i class="el-icon-share el-icon--right"></i> 分享</el-button>
+                <el-button type="primary" plain @click="fileEdit" v-show=" selected_file.length+selected_folder.length==1 " size="mini"><i class="el-icon-edit el-icon--right"></i> 编辑</el-button>
+                <el-button type="primary" plain @click="fileDown" v-show=" selected_file.length==1 && selected_folder.length==0" size="mini"><i class="el-icon-download el-icon--right"></i> 下载</el-button>
+                <el-button type="primary" plain @click="fileCopy" size="mini"><i class="el-icon-copy-document el-icon--right"></i> 复制</el-button>
+                <el-button type="primary" plain @click="fileMove" size="mini"><i class="el-icon-scissors el-icon--right"></i> 移动</el-button>
+                <el-button type="primary" plain @click="fileDel" size="mini"><i class="el-icon-delete el-icon--right"></i> 删除</el-button>
               </el-button-group>
               <p>
                 <el-breadcrumb separator-class="el-icon-arrow-right">
@@ -27,9 +27,9 @@
                 </el-breadcrumb>
               </p>
 
-              <div class="search">
+              <div class="search" v-show="false">
                 <el-input
-                  placeholder="请选择日期"
+                  placeholder="请输入搜索内容"
                   suffix-icon="el-icon-date"
                   v-model="search_text">
                 </el-input>
@@ -82,9 +82,6 @@
                     </el-tooltip>
                   </div>
                 
-
-
-                
             </el-row>
             </div>
             
@@ -96,24 +93,92 @@
       <el-tab-pane name="2" :ptitle="'我的分享'">
           <span slot="label"><i class="el-icon-user"></i> 我的分享</span>
           <vue-scroll>
-            <div class="tab tab1">
-                <el-row :gutter="20">
-                    <el-col :span="10">
-                        我的分享
-                    </el-col>
+            <div class="tab tab2">
+                <div class="btn-box" style="text-align:left;">
+                    <el-button type="danger" round :disabled="myshare_selected.length == 0" @click="delMyShare" size="mini">删除分享</el-button>
+                    <el-button type="warning" round :disabled="myshare_selected.length == 0" @click="hideMyShare" size="mini">取消分享</el-button>
+                    <el-button type="success" round :disabled="myshare_selected.length == 0" @click="showMyShare" size="mini">恢复分享</el-button>
+                </div>
+                <el-table 
+                  ref="multipleTable"
+                  :data="$store.state.share.myshare"
+                  tooltip-effect="dark"
+                  style="width: 100%"
+                  stripe
+                  size="small"
+                  @selection-change="handleSelectionChangeShare">
+                  <el-table-column type="selection" width="55"></el-table-column>
+                  <el-table-column label="名称" show-overflow-tooltip min-width="250">
+                    <template slot-scope="scope">
+                      <el-link type="primary" :href="scope.row.downUrl" target="_blank" title="查看详情">
+                      <span v-if="scope.row.isfolder" style="cursor: pointer;">
+                          <img src="../assets/icons/Folder_24.png" alt="">&nbsp;&nbsp;
+                          {{ scope.row.name }}
+                      </span>
+                      <span v-if="!scope.row.isfolder" style="cursor: pointer;">
+                          <img src="../assets/icons/file1.png" width="24" height="24" alt="">&nbsp;&nbsp;
+                          {{ scope.row.name }}
+                      </span>
+                      </el-link>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="提取码" show-overflow-tooltip width="150">
+                    <template slot-scope="scope">
+                      <span style="display: inline-block;width: 50px; margin-right: 5px;">
+                      <span v-if="!scope.row.is_encrypt">无加密</span>
+                      <span v-if="scope.row.is_encrypt" :data-clipboard-text="scope.row.share_password" class="copyBtn" @click="$global.copy()" style="cursor:pointer;" :title="`点击复制提取码`">{{ scope.row.share_password }}</span>
+                      </span>
+                      <el-button type="primary" icon="el-icon-document-copy" size="mini" :title="`复制链接和密码`" circle :data-clipboard-text="`链接: ${scope.row.downUrl}  提取码: ${scope.row.share_password} [来自${$store.state.user.userInfo.nickname}的分享]`" class="copyBtn" @click="$global.copy()"></el-button>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="下载次数" show-overflow-tooltip width="150">
+                    <template slot-scope="scope">
+                      {{ scope.row.use_frequency || 0 }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="次数上限" show-overflow-tooltip width="150">
+                    <template slot-scope="scope">
+                      <span v-if="scope.row.is_frequency">{{ scope.row.frequency }}</span>
+                      <span v-if="!scope.row.is_frequency">无上限</span>
+                      
+                    </template>
+                  </el-table-column>
+                  <el-table-column show-overflow-tooltip label="修改时间" width="150">
                     
-                    <el-col :span="10">
-                        
-                    </el-col>
-                </el-row>
+                    <template slot-scope="scope" v-if="scope.row.uptime">
+                      
+                      {{ $global.formatTime(scope.row.uptime, 'Y-m-d H:i') }}
+                      
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column show-overflow-tooltip label="到期时间" width="150">
+                    
+                    <template slot-scope="scope">
+                      <span v-if="scope.row.is_expire"> {{ $global.formatTime(scope.row.expire_time, 'Y-m-d H:i:s') }} </span>
+                      <span v-if="!scope.row.is_expire"> 永久有效 </span>
+ 
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column show-overflow-tooltip label="状态" width="150">
+                    
+                    <template slot-scope="scope">
+                      <span v-if="!scope.row.status" style="color: #F56C6C;"> 分享已被取消 </span>
+                      <span v-if="scope.row.status" style="color: #409EFF;"> 正在分享 </span>
+ 
+                    </template>
+                  </el-table-column>
+                  
+                </el-table>
             </div>
           </vue-scroll>
       </el-tab-pane>
 
-      <el-tab-pane name="3" :ptitle="'我的评论'">
+      <!-- <el-tab-pane name="3" :ptitle="'我的评论'">
           <span slot="label"><i class="el-icon-user"></i> 我的评论</span>
           <vue-scroll>
-            <div class="tab tab1">
+            <div class="tab tab3">
                 <el-row :gutter="20">
                     <el-col :span="10">
                         我的评论
@@ -125,22 +190,59 @@
                 </el-row>
             </div>
           </vue-scroll>
-      </el-tab-pane>
+      </el-tab-pane> -->
 
 
       <el-tab-pane name="4" :ptitle="'我的下载'">
           <span slot="label"><i class="el-icon-user"></i> 我的下载</span>
           <vue-scroll>
-            <div class="tab tab1">
-                <el-row :gutter="20">
-                    <el-col :span="10">
-                        我的下载
-                    </el-col>
+            <div class="tab tab4">
+              <div class="btn-box" style="text-align:left;">
+                <el-button type="danger" round :disabled="mydown_selected.length == 0" @click="delMyDown" size="mini">删除</el-button>
+              </div>
+                <el-table 
+                  ref="multipleTable"
+                  :data="$store.state.data.mydown"
+                  tooltip-effect="dark"
+                  style="width: 100%"
+                  stripe
+                  size="small"
+                  @selection-change="handleSelectionChangeDown">
+                  <el-table-column type="selection" width="55"></el-table-column>
+                  <el-table-column label="日期" width='150'>
+                    <template slot-scope="scope" v-if="scope.row.regtime">{{ $global.formatTime(scope.row.regtime, 'Y-m-d') }}</template>
+                  </el-table-column>
+                  <el-table-column label="大小" show-overflow-tooltip width='150'>
+                    <template slot-scope="scope" v-if="scope.row.file">{{ $global.easyFileSize(scope.row.file.size)  }}</template>
+                  </el-table-column>
+                  <el-table-column show-overflow-tooltip label="文件名" width='450'>
                     
-                    <el-col :span="10">
-                        
-                    </el-col>
-                </el-row>
+                    <template slot-scope="scope" v-if="scope.row.file">
+                      
+                      {{ scope.row.file.name }}
+                      
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="位置" show-overflow-tooltip width='200'>
+                    
+                    <template slot-scope="scope" v-if="scope.row.folder">
+
+                      {{ scope.row.folder.path+scope.row.folder.name }}
+                      
+                    </template>
+                    
+                  </el-table-column>
+                  <el-table-column label="描述" show-overflow-tooltip min-width='100'>
+                    
+                    <template slot-scope="scope" v-if="scope.row.file">
+
+                      {{ scope.row.file.description_context }}
+                      
+                    </template>
+ 
+                  </el-table-column>
+                </el-table>
+                
             </div>
           </vue-scroll>
       </el-tab-pane>
@@ -151,16 +253,16 @@
           <vue-scroll>
             <div class="tab tab5">
               <div class="btn-box" style="text-align:left;">
-                <el-button type="danger" round :disabled="myup_selected.length == 0" @click="delMyUp">删除</el-button>
+                <el-button type="danger" round :disabled="myup_selected.length == 0" @click="delMyUp" size="mini">删除</el-button>
               </div>
-              <el-divider></el-divider>
                 <el-table 
                   ref="multipleTable"
                   :data="$store.state.data.myup"
                   tooltip-effect="dark"
                   style="width: 100%"
                   stripe
-                  @selection-change="handleSelectionChange">
+                  size="small"
+                  @selection-change="handleSelectionChangeUp">
                   <el-table-column type="selection" width="55"></el-table-column>
                   <el-table-column label="日期" width='150'>
                     <template slot-scope="scope" v-if="scope.row.regtime">{{ $global.formatTime(scope.row.regtime, 'Y-m-d') }}</template>
@@ -277,6 +379,103 @@
       </el-upload>
     </el-dialog>
 
+    <transition name="el-zoom-in-top">
+        <el-dialog title="分享" :visible.sync="alert_share" :width="`500px`" :class="'transition-box'">
+            <el-form :model="shareForm">
+                <el-form-item label="发布动态" :label-width="'80px'">
+                    <el-col :span="6">
+                        <el-switch v-model="shareForm.is_open"></el-switch>
+                    </el-col>
+                    <!-- <el-col class="line" :span="2">-</el-col> -->
+                    <el-col :span="16" v-show="shareForm.is_open">
+                        <el-form-item label="允许评论" :label-width="'80px'">
+                            <el-switch v-model="shareForm.allow_comment"></el-switch>
+                        </el-form-item>
+                    </el-col>
+                    
+                </el-form-item>
+                <el-form-item label="主题" :label-width="'80px'" v-show="shareForm.is_open">
+                    <el-input v-model="shareForm.subject" autocomplete="off" autofocus="true" type='text' placeholder="填写主题"></el-input>
+                </el-form-item>
+                <el-form-item label="描述" :label-width="'80px'" v-show="shareForm.is_open">
+                    <el-input type="textarea" maxlength="140" show-word-limit v-model="shareForm.content" rows="4" placeholder="填写描述"></el-input>
+                </el-form-item>
+                <el-form-item label="加密" :label-width="'80px'">
+                    <el-switch v-model="shareForm.is_encrypt"></el-switch>
+                </el-form-item>
+                <el-form-item label="设置期限" :label-width="'80px'">
+                    <el-col :span="6">
+                        <el-switch v-model="shareForm.is_expire"></el-switch>
+                    </el-col>
+                    <!-- <el-col class="line" :span="2">-</el-col> -->
+                    <el-col :span="16" v-show="shareForm.is_expire">
+                        <el-radio v-model="shareForm.expire_type" label="1">1天</el-radio>
+                        <el-radio v-model="shareForm.expire_type" label="2">7天</el-radio>
+                        <el-radio v-model="shareForm.expire_type" label="3">1个月</el-radio>
+                    </el-col>
+                    
+                </el-form-item>
+                <el-form-item label="下载次数" :label-width="'80px'">
+                    <el-col :span="6">
+                        <el-switch v-model="shareForm.is_frequency"></el-switch>
+                    </el-col>
+                    <!-- <el-col class="line" :span="2">-</el-col> -->
+                    <el-col :span="16" v-show="shareForm.is_frequency">
+                        <el-input-number v-model="shareForm.frequency" @change="" :min="1" label="下载次数" :step="10"></el-input-number>
+                    </el-col>
+                </el-form-item>
+                <el-form-item label="显示位置" :label-width="'80px'" v-show="shareForm.is_open">
+                    <el-col :span="6">
+                        <el-switch v-model="shareForm.show_location"></el-switch>
+                    </el-col>
+                    <!-- <el-col class="line" :span="2">-</el-col> -->
+                    <el-col :span="16" v-show="shareForm.show_location">
+                        <el-input v-model="shareForm.custom_location" autocomplete="off" autofocus="true" type='text' placeholder="自定义位置(可不填)"></el-input>
+                    </el-col>
+                </el-form-item>
+
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="alert_share = false">取 消</el-button>
+                <el-button type="primary" @click="onSubmitShare">分 享</el-button>
+            </div>
+        </el-dialog>
+    </transition>
+
+    <el-dialog title="分享成功" :visible.sync="$store.state.share.share_success" :width="`500px`">
+        <el-row :gutter="20">
+            <el-col :span="16">
+                <el-input v-model="$store.state.share.shareSuccess.share_link" readonly size="small">
+                    <template slot="prepend"><i class="el-icon-link"></i> 链接</template>
+                </el-input>
+                
+            </el-col>
+            <el-col :span="8" :style="{'text-align': 'right'}">
+                <el-button type="primary" icon="el-icon-document-copy" class="copyBtn" :data-clipboard-text="$store.state.share.shareSuccess.share_link" @click="$global.copy()" size="small">复制链接</el-button>
+                
+            </el-col>
+        </el-row>
+        <el-row :gutter="20" :style="{'margin-top': '20px'}">
+            <el-col :span="16">
+                <el-input v-model="$store.state.share.shareSuccess.share_password" readonly size="small">
+                    <template slot="prepend"><i class="el-icon-lock"></i> 提取码</template>
+                </el-input>
+            </el-col>
+                
+            <el-col :span="8" :style="{'text-align': 'right'}">
+                <el-button type="primary" icon="el-icon-document-copy" class="copyBtn" :data-clipboard-text="$store.state.share.shareSuccess.copy_link_pwd" @click="$global.copy()" size="small">复制链接和密码</el-button>
+            </el-col>
+
+        </el-row>
+            
+        <el-divider></el-divider>
+        <p v-show="$store.state.share.shareSuccess.expire_day"><span>{{ $store.state.share.shareSuccess.expire_day }} ({{ $store.state.share.shareSuccess.expire_time }}到期)</span></p>
+        <p v-show="$store.state.share.shareSuccess.frequency"><span>{{ $store.state.share.shareSuccess.frequency }}</span></p>
+
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="$store.commit('share/set_share_success', false)">关 闭</el-button>
+        </div>
+    </el-dialog>
     
     <el-card class="box-card box-card-up" shadow="hover" v-show="up_box" :style="{ height: up_box_height }">
       <div slot="header" class="clearfix">
@@ -320,44 +519,64 @@ export default {
   },
   data() {
     return {
-      tabPosition: 'left',
-      search_text: '',
-      alert_createFolder: false,
-      formLabelWidth: '120px',
-      createFolder: {
-        name: '',
-        remark_context: '',
-        folder_id: ''
-      },
-      selected_file: [],
-      selected_folder: [],
-      //file_items: this.$store.state.data.home_nav_items[this.$store.state.data.home_nav_path.active_item].list,
-      tab1_checked: false,
-      alert_upFolder: false,
-      uplist: [],
-      up_box: '',
-      up_box_height: '',
-      myup_selected: [],
-      alert_edit: false,
-      editForm: {
-        name: '',
-        context: '',
-        id: '',
-        type: ''
-      },
-      alert_editTitle: '',
-      alert_copyMove: false,
-      alert_copyMoveTitle: '',
-      defaultProps: {
-       children: 'child',
-        label: 'name'
-      },
-      folderTreeText: '',    
+        tabPosition: 'left',
+        search_text: '',
+        alert_createFolder: false,
+        formLabelWidth: '120px',
+        createFolder: {
+            name: '',
+            remark_context: '',
+            folder_id: ''
+        },
+        selected_file: [],
+        selected_folder: [],
+        //file_items: this.$store.state.data.home_nav_items[this.$store.state.data.home_nav_path.active_item].list,
+        tab1_checked: false,
+        alert_upFolder: false,
+        uplist: [],
+        up_box: '',
+        up_box_height: '',
+        myup_selected: [],
+        mydown_selected: [],
+        myshare_selected: [],
+        mycomment_selected: [],
+        alert_edit: false,
+        editForm: {
+            name: '',
+            context: '',
+            id: '',
+            type: ''
+        },
+        alert_editTitle: '',
+        alert_copyMove: false,
+        alert_copyMoveTitle: '',
+        defaultProps: {
+        children: 'child',
+            label: 'name'
+        },
+        folderTreeText: '',    
+        last_selected_file: {},
+        alert_share: false,
+        shareForm: {
+            subject: '', //主题
+            content: '', //内容
+            is_open: false, //是否公开发布到动态
+            is_encrypt: true, //是否加密
+            is_expire: false, //是否有期限
+            is_frequency: false, //是否有次数
+            expire_type: '2', //到期时间类型 1: 1天, 2: 7天, 3: 1月, 其他就是默认的7天
+            frequency: 1, //设定次数
+            allow_comment: true, //是否允许评论
+            show_location: false, //是否显示地理位置
+            custom_location: '' //自定义地理位置
+        },
+        
+
     }
   },
   methods: {
     TabClick(e) {
-      console.log(e)
+      //console.log(e)
       this.$store.commit('page/setHome_tabActive', e.name)
       this.$store.commit('page/setTitle', this.$global.name + ' - ' + e.$attrs.ptitle)
     },
@@ -385,7 +604,15 @@ export default {
               this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
               this.$store.dispatch('data/getFolderMenu')
               this.alert_createFolder = false
-          }else{
+          }else if(res.code == -100){
+                    this.$notify({
+                        title: '警告',
+                        message: res.msg,
+                        type: 'warnning',
+                        duration: 1500
+                    })
+                    this.$router.push('/login')
+                }else{
               this.$notify.error({
                   title: '错误',
                   message: res.msg,
@@ -437,6 +664,7 @@ export default {
             id: ``,
             type: ``
           }
+          this.last_selected_file = {}
         }else{
           this.selected_file.push(id)
           this.editForm = {
@@ -445,9 +673,13 @@ export default {
             id: item.id,
             type: 2
           }
+          this.last_selected_file = item
         }
       }
-      
+        if(this.selected_file.length + this.selected_folder.length == this.$store.state.data.home_nav_items[this.$store.state.data.home_nav_path.active_item].list.file.length + this.$store.state.data.home_nav_items[this.$store.state.data.home_nav_path.active_item].list.folder.length)
+            this.tab1_checked = true
+        else
+            this.tab1_checked = false
       //console.log(this.selected_file)
       //console.log(this.selected_folder)
 
@@ -536,7 +768,15 @@ export default {
                   this.$store.commit('data/setMyUp', extend.my_up)
                   //console.log(this.$store.state.user.userInfo.use_size)
                   //this.$store.commit('user/setAvatar', res.data.net_path)
-              }
+              }else if(res.code == -100){
+                    this.$notify({
+                        title: '警告',
+                        message: res.msg,
+                        type: 'warnning',
+                        duration: 1500
+                    })
+                    this.$router.push('/login')
+                }
               else if(res.code == 0){
                 self.uplist[self.uplist.indexOf(status)].type = `上传失败`
                 self.uplist[self.uplist.indexOf(status)].error = res.msg
@@ -588,6 +828,14 @@ export default {
                         this.$store.commit('data/setMyUp', extend.my_up)
                         //console.log(this.$store.state.user.userInfo.use_size)
                         //this.$store.commit('user/setAvatar', res.data.url)
+                    }else if(res.code == -100){
+                        this.$notify({
+                            title: '警告',
+                            message: res.msg,
+                            type: 'warnning',
+                            duration: 1500
+                        })
+                        this.$router.push('/login')
                     }else{
                       self.uplist[self.uplist.indexOf(status)].type = `上传失败`
                       self.uplist[self.uplist.indexOf(status)].progress = 0
@@ -644,7 +892,16 @@ export default {
       this.$store.dispatch('data/enterFolder', folder)
     },
     fileShare() {
-      console.log(`分享`)
+        console.log(`分享`)
+        //分享是分享，分享文件夾也不能下載文件夾，智能點開文件夾一個個文件下載，文件夾的下載後續再開放
+        if(this.selected_file.length + this.selected_folder.length == 0){
+            this.$message({
+                message: '请选择一项进行操作',
+                type: 'warning'
+            })
+            return
+        }
+        this.alert_share = true
     },
     fileEdit() {
       console.log(`编辑`)
@@ -660,7 +917,17 @@ export default {
       this.alert_edit = true
     },
     fileDown() {
+      //目前只能单个下载
       console.log(`下载`)
+      if(this.selected_file.length != 1){
+        this.$message({
+          message: '请选择一项进行下载',
+          type: 'warning'
+        })
+        return
+      }
+      this.$store.dispatch('data/download', {id: this.selected_file[0]})
+      this.selected_file = []
 
     },
     fileCopy() {
@@ -671,6 +938,8 @@ export default {
     },
     fileMove() {
       console.log(`移动`)
+      this.alert_copyMoveTitle = `移动`
+      this.alert_copyMove = true
 
     },
     filterFolderTree(value, data) {
@@ -773,9 +1042,20 @@ export default {
       this.alert_copyMove = false
       
     },
+    // 提交分享
+    onSubmitShare() {
+        console.log(this.shareForm)
+        this.alert_share = false
+        let data = {
+            folder: this.selected_folder,
+            file: this.selected_file,
+            share: this.shareForm
+        }
+        this.$store.dispatch('share/share', data)
+    },
 
     /* 我的上传 */
-    handleSelectionChange(val) {
+    handleSelectionChangeUp(val) {
       this.myup_selected = val
       console.log(this.myup_selected)
     },
@@ -791,15 +1071,103 @@ export default {
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-            console.log(12)
             this.$store.dispatch('data/delMyUp', this.myup_selected)
           }).catch(() => {
             this.$message({
               type: 'info',
               message: '已取消删除'
             });          
-          })
-        
+          }) 
+    },
+    /* 我的下载 */
+    handleSelectionChangeDown(val) {
+      this.mydown_selected = val
+      console.log(this.mydown_selected)
+    },
+    delMyDown() {
+      if(this.mydown_selected.length == 0)
+        this.$message({
+          message: '请至少选择一项再操作',
+          type: 'warning'
+        })
+      else
+        this.$confirm('此操作将删除该您的下载记录, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$store.dispatch('data/delMyDown', this.mydown_selected)
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });          
+          }) 
+    },
+    /* 我的分享 */
+    handleSelectionChangeShare(val) {
+      this.myshare_selected = val
+      console.log(this.myshare_selected)
+    },
+    delMyShare() {
+      if(this.myshare_selected.length == 0)
+        this.$message({
+          message: '请至少选择一项再操作',
+          type: 'warning'
+        })
+      else
+        this.$confirm('此操作将删除该您的分享(删除并取消分享), 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$store.dispatch('share/delMyShare', this.myshare_selected)
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            });          
+          }) 
+    },
+    hideMyShare() {
+      if(this.myshare_selected.length == 0)
+        this.$message({
+          message: '请至少选择一项再操作',
+          type: 'warning'
+        })
+      else
+        this.$confirm('此操作将取消该分享(取消分享), 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$store.dispatch('share/hideMyShare', this.myshare_selected)
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消操作'
+            });          
+          }) 
+    },
+    showMyShare() {
+      if(this.myshare_selected.length == 0)
+        this.$message({
+          message: '请至少选择一项再操作',
+          type: 'warning'
+        })
+      else
+        this.$confirm('此操作将恢复该的分享(已删除的分享不可恢复), 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$store.dispatch('share/showMyShare', this.myshare_selected)
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消操作'
+            });          
+          }) 
     },
     test() {
       this.$notify({
@@ -823,10 +1191,7 @@ export default {
     //console.log(this.$store.state.user.userInfo.use_size/this.$store.state.user.userInfo.total_size*100)
     //console.log((this.$store.state.user.userInfo.use_size/this.$store.state.user.userInfo.total_size*100).toFixed(2))
     // 获取文件
-    this.$store.dispatch('data/setHomeNav', this.$store.state.data.home_nav_path.active_item)
-    this.$store.dispatch('data/setFileAllow')
-    this.$store.dispatch('data/getMyUp')
-    this.$store.dispatch('data/getFolderMenu')
+    
   },
   watch: {
     folderTreeText(val) {
