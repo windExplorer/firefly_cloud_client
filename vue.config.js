@@ -13,7 +13,7 @@ module.exports = {
             // jsonplaceholder.typicode.com
             // 配置跨域
             '/api': {
-                target: 'http://www.firefly.test/',
+                target: 'http://www.firefly.test',
                 ws: true,
                 changeOrigin: true,
                 pathRewrite: {
