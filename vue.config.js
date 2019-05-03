@@ -1,5 +1,5 @@
 module.exports = {
-    baseUrl: '/', // 根路径
+    //baseUrl: '/', // 根路径
     outputDir: 'dist', // 构建输出目录
     assetsDir: 'assets', // 静态资源目录
     lintOnSave: false, // 是否开启eslint保存检测，有效值: true, false, error
@@ -13,7 +13,7 @@ module.exports = {
             // jsonplaceholder.typicode.com
             // 配置跨域
             '/api': {
-                target: 'http://www.firefly.test/api/',
+                target: 'http://www.firefly.test',
                 ws: true,
                 changeOrigin: true,
                 pathRewrite: {
