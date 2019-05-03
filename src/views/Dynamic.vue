@@ -16,7 +16,7 @@
                     <el-divider></el-divider>
                     <div class="share-items" v-for="(item, index) in $store.state.dynamic.new_share" :key="item.id">
                         <img :src="item.user.avatar" alt="" class="avatar">
-                        <span class="nickname">{{ $store.state.user.userInfo.nickname }}</span>
+                        <span class="nickname">{{ item.user.nickname }}</span>
                         <span class="text">分享了文件:</span>
                         <span class="link"><el-tag type="primary"><el-link type="primary" :href="item.downUrl" target="_blank"  :underline="false" icon="el-icon-link">{{ item.downUrl }}</el-link></el-tag></span>
                         <span class="encrypt copyBtn" :data-clipboard-text="item.share_password" @click="$global.copy()"><el-tag type="success" style="cursor:pointer;" ><i class="el-icon-lock"></i> {{ item.share_password }}</el-tag></span>
