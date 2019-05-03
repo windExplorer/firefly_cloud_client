@@ -3,13 +3,15 @@
         <div class="share-container">
             
             <el-container v-show="$store.state.share.showShare">
-                <vue-scroll>
+
                     <el-main>
+                        <vue-scroll>
                         <div class="main">
                             <div class="title"><i class="el-icon-document"></i> 文件列表 <span style="color: #F56C6C;font-size: 12px;margin-left: 10px;">* 双击文件名进行下载,多文件下载暂未开放 *</span> 
                                 <el-button type="primary" icon="el-icon-download" circle size="" style="float:right;" v-show="myshare_selected.length == 1" @click="$store.dispatch('share/download', myshare_selected[0]['id'])"></el-button>
                             </div>
                             <div class="limit"><span class="expire" v-show="$store.state.share.share_path.info.is_expire == 1"><i class="el-icon-time"></i> 过期时间: &nbsp;&nbsp; {{ $global.formatTime($store.state.share.share_path.info.expire_time) }}</span> <span class="frequency"><i class="el-icon-download"></i> 下载次数: &nbsp;&nbsp;{{ $store.state.share.share_path.info.use_frequency }} / {{ $store.state.share.share_path.info.frequency }}</span></div>  
+                            
                             <div class="file-container">
                                 <p>
                                     <el-breadcrumb separator-class="el-icon-arrow-right">
@@ -56,7 +58,7 @@
                                 </el-table>
    
                             </div>
-
+                
                             <div class="comment-container">
                                 <!-- //评论容器 -->
                             </div>
@@ -64,8 +66,9 @@
 
 
                         </div>
+                        </vue-scroll>
                     </el-main>
-                </vue-scroll>
+                
                 <el-aside width="240px" class="rside">
                     <div class="avatar ellipsis"><img :src="$store.state.share.shareUser.avatar" alt=""> <span class="nickname">{{ $store.state.share.shareUser.nickname }}</span></div>
                     <div class="sign">签名: &nbsp; {{ $store.state.share.shareUser.sign_context || `Ta很懒，什么也没有留下` }}</div>
@@ -145,7 +148,7 @@ export default {
 
 <style lang='scss'>
     .share{
-        height: 100%;
+        height: 100% !important;
         margin: auto;
         margin-left: 10px;
         background: #fff;
