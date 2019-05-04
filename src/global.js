@@ -204,10 +204,9 @@ export default {
     easyFileSize: size => {
         size = parseInt(size)
         let mod = 1024
-        //$units = explode(' ','B KB MB GB TB PB');
         let units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
         let i = 0
-        for (i = 0; size > mod; i++) {
+        for (i = 0; size > mod; i ++) {
             size /= mod
         }
         return Math.round(size * 100)/100 + ' ' + units[i]
