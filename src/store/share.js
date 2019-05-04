@@ -256,7 +256,8 @@ export default {
         //下载文件
         download: (context, id) => {
             context.state.share_path.info.use_frequency += 1
-            let href = context.state.share_path.downUrl + '/' + id + '/' + context.state.encrypt + '/' + $vue.$route.params.link + '/' 
+            let encrypt = context.state.encrypt || `1314`
+            let href = context.state.share_path.downUrl + '/' + id + '/' + encrypt + '/' + $vue.$route.params.link + '/' 
             window.location.href = href
         },
         //进入文件夹
