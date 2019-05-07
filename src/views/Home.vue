@@ -72,7 +72,7 @@
                     <i class="el-icon-success" :class="{'active': selected_file.includes(item.id) }" @click="select_file(item, 2)"></i>
                     <div class='img-box'>
                       <!-- <img src='../assets/icons/file1.png' class="file" /> -->
-                      <img :src="getIcon(item.ext)" alt="">
+                      <img :src="$global.getIcon(item.ext)" alt="" class="file">
                     </div>
                     <el-tooltip placement="bottom">
                       <div slot="content">{{item.name}}

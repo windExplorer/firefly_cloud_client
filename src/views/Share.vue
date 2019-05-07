@@ -34,7 +34,7 @@
                                                 {{ scope.row.name }}
                                             </span>
                                             <span v-if="scope.row.folder_id" @dblclick="$store.dispatch('share/download', scope.row.id)" style="cursor: pointer;">
-                                                <img src="../assets/icons/file1.png" width="24" height="24" alt="">&nbsp;&nbsp;
+                                                <img :src="$global.getIcon(scope.row.ext)" width="24" height="24" alt="">&nbsp;&nbsp;
                                                 {{ scope.row.name }}
                                             </span>
                                             
@@ -133,7 +133,8 @@ export default {
     },
     created() {
         this.$store.commit('page/setTitle', this.$global.name + ' - 分享')
-        //console.log(this.$route.params.link)
+        console.log(1)
+        console.log(this.$route.params.link)
         this.$store.dispatch('share/get_share')
     },
     watch: {

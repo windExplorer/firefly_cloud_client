@@ -3,7 +3,8 @@ import CryptoJS from "crypto-js"
 
 export default {
     name: `萤火云`,
-    adminUrl: `http://www.firefly.test`,
+    //adminUrl: `http://www.firefly.test`,
+    adminUrl: `http://www.firefly.test:81`,
 
     getFileMd5: function(file, callback) {
         var reader = new FileReader()
@@ -255,9 +256,30 @@ export default {
     },
     //获取图片图标
     getIcon(ext) {
+        ext = ext.toLowerCase()
         switch(ext) {
-            case 'doc': case 'docx' : return `../assets/icons/files/word.png`
-            default: return '../assets/icons/files/file.png'
+            case 'doc': case 'docx': return require(`./assets/icons/files/word.png`)
+            case 'zip' : case 'rar': return require(`./assets/icons/files/zip.png`)
+            case 'ppt' : case 'pptx': return require(`./assets/icons/files/ppt.png`)
+            case 'xls' : case 'xlsx': return require(`./assets/icons/files/excel.png`)
+            case 'apk' : case 'exe': return require(`./assets/icons/files/exe.png`)
+            case 'png' : case 'jpg': case 'jpeg' : case 'bmp' : case 'gif' : case 'webp': case 'ico': return require(`./assets/icons/files/img.png`)
+            case 'txt': return require(`./assets/icons/files/txt.png`)
+            case 'pdf': return require(`./assets/icons/files/pdf.png`)
+            case 'py': return require(`./assets/icons/files/python.png`)
+            case 'php': return require(`./assets/icons/files/php.png`)
+            case 'java': case 'jar': return require(`./assets/icons/files/java.png`)
+            case 'js': return require(`./assets/icons/files/js.png`)
+            case 'css': return require(`./assets/icons/files/css.png`)
+            case 'html': return require(`./assets/icons/files/html.png`)
+            case 'sql': case 'db': return require(`./assets/icons/files/sql.png`)
+            case 'go': return require(`./assets/icons/files/golang.png`)
+            case 'bat': return require(`./assets/icons/files/bat.png`)
+            case 'sh': return require(`./assets/icons/files/shell.png`)
+            case 'c': case 'cpp': case 'h': return require(`./assets/icons/files/c.png`)
+            case 'mp4': case 'mkv': case 'rmvb': case 'avi': case '3gp': case 'rm': case 'mov': return require(`./assets/icons/files/movie.png`)
+            case 'mp3': case 'flac': case 'aac': case 'amr': case 'wav': case 'ogg': case 'mpeg': return require(`./assets/icons/files/music.png`)
+            default: return require('./assets/icons/files/file.png')
         }
     }
 }
