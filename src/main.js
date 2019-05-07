@@ -23,7 +23,7 @@ Vue.prototype.$clipboard = clipboard
 Vue.config.productionTip = false
 
 Vue.use(element)
-Vue.use(vuescroll); // install the vuescroll first
+Vue.use(vuescroll) // install the vuescroll first
 Vue.prototype.$vuescrollConfig = {
   scrollPanel: {
     easing: 'easeInOutQuart'
@@ -32,7 +32,7 @@ Vue.prototype.$vuescrollConfig = {
     background: '#1DDCFD',
     showDelay: 1000
   }
-};
+}
 
 
 /* 自定义组件 */
