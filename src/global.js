@@ -253,4 +253,11 @@ export default {
             })
         })
     },
+    //获取图片图标
+    getIcon(ext) {
+        switch(ext) {
+            case 'doc': case 'docx' : return `../assets/icons/files/word.png`
+            default: return '../assets/icons/files/file.png'
+        }
+    }
 }

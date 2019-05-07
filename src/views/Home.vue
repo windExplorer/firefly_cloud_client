@@ -71,7 +71,8 @@
                   <div class="file-box" :class="{'active': selected_file.includes(item.id) }" v-for="(item, index) in $store.state.data.home_nav_items[$store.state.data.home_nav_path.active_item].list.file" :v-key="index">
                     <i class="el-icon-success" :class="{'active': selected_file.includes(item.id) }" @click="select_file(item, 2)"></i>
                     <div class='img-box'>
-                      <img src='../assets/icons/file1.png' class="file" />
+                      <!-- <img src='../assets/icons/file1.png' class="file" /> -->
+                      <img :src="getIcon(item.ext)" alt="">
                     </div>
                     <el-tooltip placement="bottom">
                       <div slot="content">{{item.name}}
@@ -1169,6 +1170,11 @@ export default {
               message: '已取消操作'
             });          
           }) 
+    },
+    getIcon(ext){
+      let x = this.$global.getIcon(ext)
+      console.log(x)
+      return require('../assets/icons/files/file.png')
     },
     test() {
       this.$notify({
